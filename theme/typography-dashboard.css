@@ -1,0 +1,24 @@
+:root {
+  --dashboard-font-family-base: "Inter", "Segoe UI", sans-serif;
+}
+
+.dash-display,
+.dash-heading-1,
+.dash-heading-2,
+.dash-body-lg,
+.dash-body-md,
+.dash-body-md-bold,
+.dash-body-sm,
+.dash-label-sm {
+  margin: 0;
+  font-family: var(--dashboard-font-family-base);
+}
+
+.dash-display { font-size: 1.75rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.015em; }
+.dash-heading-1 { font-size: 1.375rem; line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; }
+.dash-heading-2 { font-size: 1.0625rem; line-height: 1.35; font-weight: 600; }
+.dash-body-lg { font-size: 1rem; line-height: 1.5; font-weight: 400; }
+.dash-body-md { font-size: 0.9375rem; line-height: 1.5; font-weight: 400; }
+.dash-body-md-bold { font-size: 0.9375rem; line-height: 1.5; font-weight: 600; }
+.dash-body-sm { font-size: 0.8125rem; line-height: 1.45; font-weight: 400; }
+.dash-label-sm { font-size: 0.75rem; line-height: 1.2; font-weight: 600; letter-spacing: 0.02em; }

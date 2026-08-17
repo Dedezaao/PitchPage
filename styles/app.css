@@ -1,0 +1,2238 @@
+/* Protótipo — App do aluno (Nexus)
+ *
+ * Consome APENAS a camada Semantic + Typography · App + Illustration.
+ * Nenhum hex e nenhum px solto no lugar de var() — ver theme/README.md,
+ * regra 4. As únicas medidas cruas aqui são as três que o próprio
+ * sistema declara como geometria e não como espaçamento:
+ *   · 44/48 de alvo de toque
+ *   · 26 do padding lateral do Slider (recuo do knob + meio knob - meio ponto)
+ *   · 12 do padding lateral da fila de clima (meio ícone alinhado ao knob)
+ * ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-family: var(--app-font-family-base);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+/* .checkin e .done são display:flex, e flex ganha do [hidden] do
+   navegador. Sem isto as duas vistas aparecem empilhadas. */
+[hidden] {
+  display: none !important;
+}
+
+/* -------------------------------------------------------------------
+ * Aparelho — só andaime de protótipo. Em 360 ou menos, some.
+ * ------------------------------------------------------------------- */
+.device {
+  width: 360px;
+  height: 812px;
+  background: var(--surface-page);
+  overflow: hidden;
+  position: relative;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-sm);
+}
+
+@media (max-width: 400px), (max-height: 840px) {
+  .device {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-none);
+    box-shadow: none;
+  }
+}
+
+/* -------------------------------------------------------------------
+ * Estrutura da tela
+ *
+ * O respiro lateral é aplicado UMA vez, em .screen__body. A Tab Bar
+ * fica FORA dele porque é borda a borda.
+ * ------------------------------------------------------------------- */
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.screen {
+  flex: 1 0 0;
+  min-height: 0;
+  display: none;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.screen[data-active] {
+  display: flex;
+}
+
+.screen__body {
+  position: relative;
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Vale só para Histórico e Perfil, que não passam por .view. Na tela
+     Início o corpo tem um filho só e o gap não faz nada. */
+  gap: var(--space-stack-lg);
+  /* O 8 embaixo é o respiro entre o conteúdo e a Tab Bar (Content
+     Container termina 8 acima dela, 218:1653). Sem ele o botão
+     "Preciso conversar agora" encosta na borda de cima da barra. */
+  padding: var(--space-inset-md) var(--space-screen-margin) var(--space-inset-sm);
+  /* hidden e não auto: a vista de comentário entra em translateY(100%)
+     e, num contêiner rolável, esse deslocamento vira área rolável — era
+     a barra de rolagem que piscava durante a animação. Quem rola, se
+     precisar, é cada vista. */
+  overflow: hidden;
+}
+
+/* Exceção: a lista do Histórico cresce sem teto, então ali a rolagem
+   volta. Ela mora na vista da lista (.vault--open), não no corpo da
+   tela — a trava tem altura fixa e não pode rolar junto. */
+
+/* Uma vista por vez dentro do mesmo corpo de tela. */
+.view {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-section);
+}
+
+/* -------------------------------------------------------------------
+ * Cabeçalho
+ * ------------------------------------------------------------------- */
+.app-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-lg);
+}
+
+.app-bar__identity {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-md);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand-subtle);
+  color: var(--brand-1000);
+}
+
+/* Variante com foto. O enquadramento vem do Figma: a imagem é maior que
+   o círculo e está deslocada, então não dá para usar object-fit — as
+   porcentagens abaixo são as mesmas do nó 218:1656. */
+.avatar--photo {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border-brand);
+}
+
+.avatar--photo img {
+  position: absolute;
+  width: 299.04%;
+  height: 199.36%;
+  left: -54.94%;
+  top: -6.59%;
+  max-width: none;
+}
+
+.app-bar__greeting {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-bar__date {
+  color: var(--text-secondary);
+}
+
+/* -------------------------------------------------------------------
+ * Button — 111:10
+ *
+ * Altura 48 em toda combinação, inclusive só-ícone (48×48): padding
+ * inset/md (16) nos quatro lados + 16 de conteúdo, que é tanto
+ * icon/size/sm quanto a caixa de linha de app/label/sm.
+ * ------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-inline-sm);
+  padding: var(--space-inset-md);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* O anel é sempre duas camadas com um respiro de superfície no meio —
+   é o respiro que o faz funcionar sobre qualquer fundo. */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-default), 0 0 0 5px var(--border-focus-ring);
+}
+
+.btn--primary {
+  background: var(--surface-brand);
+  color: var(--text-inverse);
+}
+.btn--primary:hover {
+  background: var(--surface-brand-hover);
+}
+.btn--primary:active {
+  background: var(--surface-brand-active);
+}
+.btn--primary:disabled {
+  background: var(--surface-disabled);
+  /* text/disabled sobre surface/disabled dá 1,87:1 — por isso secondary. */
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.btn--secondary {
+  background: var(--surface-default);
+  box-shadow: inset 0 0 0 1px var(--border-brand);
+  color: var(--text-brand);
+}
+.btn--secondary:hover {
+  background: var(--surface-subtle);
+}
+.btn--secondary:active {
+  background: var(--surface-muted);
+}
+
+.btn--critical {
+  background: var(--surface-default);
+  /* border/critical (red/500) e NÃO border/critical-subtle: a borda é a
+     única coisa que define este botão, e precisa dos 3:1 de 1.4.11. */
+  box-shadow: inset 0 0 0 1px var(--border-critical);
+  color: var(--text-critical);
+}
+.btn--critical:hover {
+  background: var(--surface-critical);
+}
+.btn--critical:active {
+  background: var(--surface-critical-strong);
+}
+
+/* Tertiary tem fill em hover e pressed de propósito: sem retorno ao
+   toque o usuário bate duas vezes, e no celular hover nem existe. */
+.btn--tertiary {
+  color: var(--text-brand);
+}
+.btn--tertiary:hover {
+  background: var(--surface-subtle);
+}
+.btn--tertiary:active {
+  background: var(--surface-muted);
+}
+
+.btn--secondary:disabled,
+.btn--critical:disabled,
+.btn--tertiary:disabled {
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+  background: transparent;
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------
+ * Icon
+ *
+ * O SVG exportado do Figma vem com a cor fixa dentro do arquivo. Aqui
+ * ele entra como máscara para a cor sair do token da superfície, como
+ * manda a doc dos componentes Icon / *.
+ * ------------------------------------------------------------------- */
+.icon {
+  flex: none;
+  display: block;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  background-color: currentColor;
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
+}
+
+.icon--md {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+}
+
+.icon--bell {
+  --icon-src: url("../assets/icons/bell.svg");
+}
+.icon--house {
+  --icon-src: url("../assets/icons/house.svg");
+}
+.icon--clock {
+  --icon-src: url("../assets/icons/clock.svg");
+}
+.icon--user {
+  --icon-src: url("../assets/icons/user-round.svg");
+}
+.icon--lock {
+  --icon-src: url("../assets/icons/lock.svg");
+}
+.icon--delete {
+  --icon-src: url("../assets/icons/delete.svg");
+}
+
+/* -------------------------------------------------------------------
+ * Check-in
+ * ------------------------------------------------------------------- */
+.checkin {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-stack-sm);
+}
+
+.checkin__main {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-xl);
+}
+
+.checkin__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-xs);
+}
+
+/* A pergunta é uma frase só, em text/brand inteira. O 'hoje' já foi
+   destacado em verde; agora não há ênfase de cor dentro dela. */
+.checkin__title {
+  margin: 0;
+  text-align: center;
+  color: var(--text-brand);
+}
+
+.checkin__subtitle {
+  margin: 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.checkin__picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-lg);
+}
+
+.checkin__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-md);
+  align-self: center;
+}
+
+.checkin__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 48 lateral é enquadramento da ilustração de 64, não espaçamento de
+     layout — por isso fica em px e não sai de space/*. Largura cai por
+     conta: 64 + 96 = 160. */
+  padding: var(--space-inset-xl) 48px;
+  border-radius: var(--radius-md);
+  background: var(--surface-brand-subtle);
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------------
+ * O céu do card — peso e luz por clima
+ *
+ * O card deixa de ser uma caixa e passa a ser o céu em volta do
+ * desenho. A escada é a mesma da rampa de severidade, e ela é
+ * emocional antes de ser gráfica:
+ *
+ *   céu limpo      mais claro e quente. A luz varre o card a cada 6s:
+ *                  ela SEMPRE volta
+ *   sol entre n.   ainda claro, mas a luz passa mais fraca e mais
+ *                  espaçada — 9s entre uma e outra
+ *   nublado        cinza por cima. Não há mais varredura: só um brilho
+ *                  difuso respirando ao longe
+ *   chuva          mais fechado e mais frio. O mesmo brilho, quase
+ *                  apagado
+ *   tempestade     o mais pesado, e sem nenhuma luz de ambiente. A
+ *                  única que sobra é o raio — o mesmo amarelo do sol,
+ *                  como já diz illustration.css
+ *
+ * NENHUM clima é pintado como erro. Vermelho e o resto da paleta de
+ * intenção ficam fora daqui de propósito: a criança não está errada
+ * por estar em tempestade, e cor de alarme diria que está. O peso vem
+ * da própria rampa das nuvens.
+ *
+ * A ressalva de contrato: estas duas camadas usam cor de
+ * `illustration.css` sobre uma superfície de UI. Elas são cenário da
+ * ilustração, não chrome — o fundo do card continua sendo
+ * --surface-brand-subtle, e o que muda é uma camada de desenho por
+ * cima. Se o time preferir, isto vira um token de superfície de cena
+ * no Figma e some daqui.
+ * ------------------------------------------------------------------- */
+.checkin__sky {
+  position: absolute;
+  inset: 0;
+  background-color: var(--weather-sun);
+  opacity: 0;
+  /* Arrastar o slider atravessa a rampa inteira: sem a transição, o
+     céu pisca de estado em estado. */
+  transition: background-color 260ms ease, opacity 260ms ease;
+}
+
+.checkin__card[data-sky="clear"] .checkin__sky {
+  background-color: var(--weather-sun);
+  opacity: 0.16;
+}
+
+.checkin__card[data-sky="partly"] .checkin__sky {
+  background-color: var(--weather-sun);
+  opacity: 0.08;
+}
+
+.checkin__card[data-sky="cloudy"] .checkin__sky {
+  background-color: var(--weather-cloud-overcast);
+  opacity: 0.14;
+}
+
+.checkin__card[data-sky="rain"] .checkin__sky {
+  background-color: var(--weather-cloud-rain);
+  opacity: 0.18;
+}
+
+/* 0.24 e não mais: a nuvem da tempestade é desta mesma cor, e o fundo
+   subindo demais engoliria o desenho. Fechado, não apagado. */
+.checkin__card[data-sky="storm"] .checkin__sky {
+  background-color: var(--weather-cloud-storm);
+  opacity: 0.24;
+}
+
+/* A faixa de luz é a mesma da confirmação — mesmo ângulo, mesma
+   duração de passagem. Lá ela celebra uma vez; aqui ela volta, e o
+   intervalo entre as voltas é o que conta o estado. */
+.checkin__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    var(--surface-default) 50%,
+    transparent 62%
+  );
+  opacity: 0;
+}
+
+.checkin__card[data-sky="clear"] .checkin__shine {
+  animation: sky-sweep-bright 6s 320ms ease-in-out infinite;
+}
+
+@keyframes sky-sweep-bright {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  4% {
+    opacity: 0.55;
+  }
+  15% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.checkin__card[data-sky="partly"] .checkin__shine {
+  animation: sky-sweep-soft 9s 320ms ease-in-out infinite;
+}
+
+@keyframes sky-sweep-soft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  4% {
+    opacity: 0.3;
+  }
+  14% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* De nublado para baixo a luz não atravessa mais nada: vira clarão
+   difuso vindo de cima, e só respira. */
+.checkin__card[data-sky="cloudy"] .checkin__shine,
+.checkin__card[data-sky="rain"] .checkin__shine {
+  background: radial-gradient(120% 80% at 50% -10%, var(--surface-default), transparent 70%);
+}
+
+.checkin__card[data-sky="cloudy"] .checkin__shine {
+  animation: sky-haze 12s ease-in-out infinite;
+}
+
+@keyframes sky-haze {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.16;
+  }
+}
+
+.checkin__card[data-sky="rain"] .checkin__shine {
+  animation: sky-haze-cold 15s ease-in-out infinite;
+}
+
+@keyframes sky-haze-cold {
+  0%,
+  100% {
+    opacity: 0.03;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+/* Tempestade não tem luz de ambiente. A do raio já está na ilustração,
+   e ela é a única — tirar esta camada é a decisão, não um esquecimento. */
+.checkin__card[data-sky="storm"] .checkin__shine {
+  display: none;
+}
+
+.checkin__label {
+  margin: 0;
+  color: var(--text-brand);
+  /* app/label/sm sobe para heading-2 aqui, como no Figma: é rótulo de
+     estado, não de controle. A caixa alta continua vindo do token. */
+  text-transform: uppercase;
+}
+
+.checkin__control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+/* Padding lateral 12 = alinhamento geométrico: ícone de 32, metade 16,
+   e o primeiro centro do slider é 28. 28 − 16 = 12. */
+.weather-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+}
+
+.weather-row__item {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  opacity: 0.45;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.weather-row__item[aria-pressed="true"] {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.weather-row__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 5px var(--border-focus-ring);
+}
+
+.checkin__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-md);
+}
+
+/* -------------------------------------------------------------------
+ * Illustration / Weather — 172:96
+ *
+ * Desenhadas em 32 e escaladas por constraint. Os insets abaixo são os
+ * do Figma, em %, justamente para escalar: o card da tela inicial usa
+ * 64, exatamente 2×.
+ * ------------------------------------------------------------------- */
+/* display:block é obrigatório, não estilo: o elemento é um <span>, e
+   inline ignora width/height — dentro do botão da fila (que não é
+   flex) a ilustração colapsava para altura 0 e sumia. */
+.weather {
+  display: block;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+.weather--lg {
+  width: 64px;
+  height: 64px;
+}
+
+.weather__art {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.weather--clear .weather__art {
+  inset: 9.38% 6.25%;
+  width: 87.5%;
+  height: 81.24%;
+}
+
+.weather--partly .weather__art {
+  inset: 23.44% 15.63%;
+  width: 68.74%;
+  height: 53.12%;
+}
+
+.weather--cloudy .weather__art {
+  inset: 28% 13.89%;
+  width: 72.22%;
+  height: 44%;
+}
+
+.weather--rain .weather__art {
+  inset: 13.83% 13.89% 42.16%;
+  width: 72.22%;
+  height: 44.01%;
+}
+
+.weather--storm .weather__art {
+  inset: 9.37% 13.89%;
+  width: 72.22%;
+  height: 81.26%;
+}
+
+/* As três gotas da chuva: no Figma são retângulos girados 15°, não
+   vetor. Aqui saem em SVG pelo mesmo motivo — precisam da cor da
+   rampa (weather/cloud/rain) e de escalar junto. */
+.weather__drops {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--weather-cloud-rain);
+}
+
+/* -------------------------------------------------------------------
+ * O céu vivo — uma animação por clima
+ *
+ * Cada um dos cinco se move do jeito do que ele é, e nenhum se move
+ * como o outro:
+ *
+ *   céu limpo          respira MUITO devagar, quase parado, com um halo
+ *                      que abre e fecha junto. Girar o sol lia como
+ *                      calor; a intenção aqui é sossego
+ *   sol entre nuvens   só a NUVEM navega. O sol fica parado atrás
+ *   nublado            navega mais devagar, com uma segunda nuvem
+ *                      cruzando atrás — é o peso do céu fechado
+ *   chuva              a nuvem balança e as três gotas caem em fila
+ *   tempestade         o raio cai meio segundo depois de entrar, e a
+ *                      nuvem treme no susto
+ *
+ * TUDO AQUI É ESCOPADO EM .checkin__card. A ilustração do "done" tem a
+ * coreografia dela e os 32px da fila não aguentam enfeite — o mesmo
+ * componente aparece em três tamanhos e só o grande do check-in ganha
+ * vida própria.
+ *
+ * O truque das duas animações na mesma linha: a entrada tem `both` e
+ * termina em transform identidade; o loop entra com atraso igual à
+ * duração dela. Enquanto a entrada roda o loop ainda não começou, e
+ * quando o loop começa ele é o último da lista e ganha. Sem isso as
+ * duas brigariam pela mesma propriedade.
+ *
+ * A troca de clima reinicia tudo de graça: setStep() reescreve o
+ * innerHTML, então os elementos são outros e as animações nascem de
+ * novo. É por isso que a entrada existe — ela é o "chegou" de cada
+ * escolha no slider.
+ * ------------------------------------------------------------------- */
+@keyframes weather-in {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+}
+
+/* --- Céu limpo: sossego, não calor.
+       Girar o sol dava movimento constante e leitura de energia — o
+       oposto do estado. Aqui é uma respiração de 9s, a mais lenta da
+       tela: a arte quase não sai do lugar e o halo abre e fecha no
+       mesmo compasso. O que se vê é uma coisa parada respirando. --- */
+.checkin__card .weather--clear .weather__art {
+  animation:
+    weather-in 320ms ease-out both,
+    sun-calm 9s 320ms ease-in-out infinite;
+}
+
+@keyframes sun-calm {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+/* O mesmo 9s do desenho: os dois inspiram juntos. Amarelo de
+   ilustração, não de UI — é a mesma luz do sol ali na frente. */
+.checkin__card .weather--clear .weather__halo {
+  animation: sun-aura 9s 320ms ease-in-out infinite;
+}
+
+@keyframes sun-aura {
+  0%,
+  100% {
+    opacity: 0.14;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.34;
+    transform: scale(1.1);
+  }
+}
+
+/* --- Sol entre nuvens: só a nuvem navega.
+       As duas camadas entram juntas; o sail é só da de cima. Sol
+       parado atrás é o que faz a nuvem parecer passar na frente dele —
+       mover os dois juntos lia como a cena inteira escorregando. --- */
+.checkin__card .weather--partly .weather__art {
+  animation: weather-in 320ms ease-out both;
+}
+
+.checkin__card .weather--partly .weather__art--drift {
+  animation:
+    weather-in 320ms ease-out both,
+    cloud-sail 6.5s 320ms ease-in-out infinite;
+}
+
+/* O vaivém passa pela identidade no 0% em vez de começar no extremo:
+   com `alternate` o loop nasceria 4px fora do lugar e daria um pulinho
+   no quadro em que a entrada acaba. Vale para os três que navegam. */
+@keyframes cloud-sail {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* --- Nublado: mais lento e mais pesado que o "sol entre nuvens", e com
+       uma segunda nuvem atravessando atrás. A parada é a diferença: céu
+       fechado não corre. --- */
+.checkin__card .weather--cloudy .weather__art {
+  animation:
+    weather-in 320ms ease-out both,
+    cloud-drift 11s 320ms ease-in-out infinite;
+}
+
+@keyframes cloud-drift {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-3px) translateY(1px);
+  }
+  75% {
+    transform: translateX(3px) translateY(-1px);
+  }
+}
+
+/* `both` não é enfeite: sem ele, durante os 320ms de atraso a nuvem de
+   trás fica na posição de layout — parada, clara e no meio do card — e
+   só então salta para fora. Era o vulto que aparecia e sumia na
+   entrada. Com `backwards` ela já nasce fora da borda. */
+.checkin__card .weather--cloudy .weather__ghost {
+  animation: ghost-cross 14s 320ms linear infinite both;
+}
+
+/* A nuvem da frente vai no sentido contrário e mais rápido. As duas
+   coisas juntas são o que faz a profundidade: o olho lê como perto o
+   que atravessa mais depressa, e dois sentidos opostos separam os
+   planos melhor do que qualquer sombra. Tamanho e opacidade maiores
+   completam — perto é maior e mais definido. */
+.checkin__card .weather--cloudy .weather__ghost--front {
+  animation: ghost-cross-front 9s 320ms linear infinite both;
+}
+
+@keyframes ghost-cross-front {
+  from {
+    transform: translateX(200%);
+  }
+  to {
+    transform: translateX(-200%);
+  }
+}
+
+/* ±225% e não ±100%: a nuvem tem 46 de largura dentro de um card de
+   156, e só nessa distância ela está inteira fora da borda quando o
+   ciclo reinicia. Com menos, o corte do loop aparece em tela. */
+@keyframes ghost-cross {
+  from {
+    transform: translateX(-225%);
+  }
+  to {
+    transform: translateX(225%);
+  }
+}
+
+/* --- Chuva: a nuvem balança curto e as gotas caem em fila. As gotas já
+       eram elementos separados (os três <line> do SVG), então aqui cada
+       uma cai no seu tempo. --- */
+.checkin__card .weather--rain .weather__art {
+  animation:
+    weather-in 320ms ease-out both,
+    rain-bob 2.8s 320ms ease-in-out infinite;
+}
+
+@keyframes rain-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-1.5px);
+  }
+  75% {
+    transform: translateY(1.5px);
+  }
+}
+
+/* Dentro do SVG o px da transform vale unidade de viewBox: 4 aqui são
+   4 de 32, o dobro em tela porque a arte grande é 64. */
+.checkin__card .weather--rain .weather__drops line {
+  animation: drop-fall 1.4s linear infinite;
+}
+
+.checkin__card .weather--rain .weather__drops line:nth-child(2) {
+  animation-delay: 0.45s;
+}
+
+.checkin__card .weather--rain .weather__drops line:nth-child(3) {
+  animation-delay: 0.9s;
+}
+
+@keyframes drop-fall {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+
+/* --- Tempestade: o raio cai LOGO — 500ms depois de entrar, não no
+       meio do ciclo. Era o único céu que pedia paciência para mostrar
+       o que fazia; agora o clarão abre a cena e o tremor vem no susto,
+       logo atrás. Os dois compartilham o ciclo de 4.4s e o mesmo
+       atraso, então continuam sincronizados a cada volta.
+
+       É o único movimento seco da tela — os outros são todos curva,
+       este tem corte. --- */
+.checkin__card .weather--storm .weather__art {
+  animation:
+    weather-in 320ms ease-out both,
+    storm-shake 4.4s 500ms ease-in-out infinite;
+}
+
+@keyframes storm-shake {
+  0%,
+  2%,
+  20%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  5% {
+    transform: translateX(-1.5px) rotate(-1.5deg);
+  }
+  9% {
+    transform: translateX(1.5px) rotate(1.5deg);
+  }
+  13% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+  17% {
+    transform: translateX(0.5px) rotate(0.5deg);
+  }
+}
+
+/* O raio brilha sozinho — é a camada storm-bolt.svg, separada da nuvem.
+   Sem isto o amarelo sumia, e a conta explica por quê: o raio (#E9C56D)
+   dá luminância 0,584 e o céu de tempestade resolvido (#bbcad0) dá
+   0,574. São 1,02:1. A cor muda, o brilho não — e forma se lê por
+   brilho. Aumentar a saturação do amarelo não resolveria nada.
+
+   A saída é dar uma borda ESCURA ao raio, não clara: contra a cor da
+   própria nuvem o amarelo salta 4,76:1. Então são duas camadas — um
+   fio da cor da nuvem colado no contorno, que é o que recorta a forma,
+   e um bloom amarelo largo por fora, que é a luz. O fio resolve o
+   contraste; o bloom faz parecer raio e não adesivo. */
+.weather__bolt {
+  filter: drop-shadow(0 0 1.5px var(--weather-cloud-storm))
+    drop-shadow(0 0 6px var(--weather-sun));
+}
+
+/* Tremor igual ao da nuvem (as duas camadas balançam juntas, senão o
+   raio descola do desenho) mais o clarão próprio, no mesmo ciclo. */
+.checkin__card .weather--storm .weather__bolt {
+  animation:
+    weather-in 320ms ease-out both,
+    storm-shake 4.4s 500ms ease-in-out infinite,
+    storm-strike 4.4s 500ms linear infinite;
+}
+
+/* Só o raio do halo cresce: a forma fica quieta e o que pulsa é a luz
+   em volta dela. */
+@keyframes storm-strike {
+  0%,
+  11%,
+  100% {
+    filter: drop-shadow(0 0 1.5px var(--weather-cloud-storm))
+      drop-shadow(0 0 6px var(--weather-sun));
+  }
+  1.5% {
+    filter: drop-shadow(0 0 2px var(--weather-cloud-storm))
+      drop-shadow(0 0 14px var(--weather-sun));
+  }
+  3% {
+    filter: drop-shadow(0 0 1.5px var(--weather-cloud-storm))
+      drop-shadow(0 0 7px var(--weather-sun));
+  }
+  5% {
+    filter: drop-shadow(0 0 2.5px var(--weather-cloud-storm))
+      drop-shadow(0 0 18px var(--weather-sun));
+  }
+}
+
+/* Dois tempos e não um: relâmpago real pisca, falha e volta. */
+.checkin__card .weather--storm .weather__flash {
+  animation: storm-flash 4.4s 500ms linear infinite;
+}
+
+@keyframes storm-flash {
+  0%,
+  11%,
+  100% {
+    opacity: 0;
+  }
+  1.5% {
+    opacity: 0.6;
+  }
+  3% {
+    opacity: 0.05;
+  }
+  5% {
+    opacity: 0.75;
+  }
+}
+
+/* -------------------------------------------------------------------
+ * As três camadas de cenário. Existem só na ilustração grande do
+ * check-in — weatherMarkup() não as escreve em mais lugar nenhum.
+ * ------------------------------------------------------------------- */
+/* Posição só por `inset`, nunca por transform de centralização: as três
+   camadas animam transform, e um translate de layout seria apagado no
+   primeiro quadro da animação. */
+.weather__halo,
+.weather__flash {
+  position: absolute;
+  inset: -25%;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(closest-side, var(--weather-sun), transparent);
+  opacity: 0;
+}
+
+/* O clarão do relâmpago nasce DENTRO da nuvem e acaba onde o raio
+   começa. Centrado, ele acendia justamente atrás do raio — amarelo
+   claro sobre amarelo claro — e apagava a forma no exato quadro em que
+   ela deveria aparecer mais. Luz na nuvem, raio recortado contra ela. */
+.weather__flash {
+  inset: -35% -25% auto;
+  height: 95%;
+}
+
+/* A nuvem de trás é a mesma de "nublado", mais apagada e mais alta —
+   as medidas saem dos insets da arte, um pouco acima dela. */
+.weather__ghost {
+  position: absolute;
+  display: block;
+  inset: 12% 13.89% auto;
+  width: 72.22%;
+  height: 44%;
+  opacity: 0.3;
+}
+
+/* A da frente: mais baixa, maior e mais opaca. 92 × 56 mantém a
+   proporção do desenho (23,1 : 14,1) — esticar a nuvem entregaria na
+   hora que é a mesma arte reaproveitada. */
+.weather__ghost--front {
+  top: 46%;
+  left: 2%;
+  width: 92%;
+  height: 56%;
+  opacity: 0.5;
+}
+
+/* -------------------------------------------------------------------
+ * Slider — 158:71
+ *
+ * Percurso e passos: o knob (40×24) não encosta nas pontas, sobra 8 de
+ * pista dos dois lados. Em 328 dá centros em 28/96/164/232/300. Aqui a
+ * conta é a mesma, só em %, calculada no JS a partir da largura real.
+ * ------------------------------------------------------------------- */
+.slider {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-xs);
+  overflow: hidden;
+}
+
+/* O que recebe o toque é ESTE frame de 48, não a pista de 8. */
+.slider__touch {
+  position: relative;
+  height: 48px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.slider__touch:active {
+  cursor: grabbing;
+}
+
+.slider__track {
+  position: absolute;
+  inset: 50% 0 auto;
+  transform: translateY(-50%);
+  height: var(--spacing-8);
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.slider__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--surface-brand);
+  transition: width 160ms ease;
+}
+
+.slider__knob {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-default);
+  box-shadow: var(--elevation-sm);
+  transition: left 160ms ease;
+}
+
+.slider__touch:focus-visible {
+  outline: none;
+}
+
+.slider__touch:focus-visible .slider__knob {
+  box-shadow: var(--elevation-sm), 0 0 0 2px var(--surface-default),
+    0 0 0 5px var(--border-focus-ring);
+}
+
+/* 26 = recuo do knob (8) + metade do knob (20) − metade do ponto (2). */
+.slider__steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+}
+
+.slider__step {
+  width: var(--spacing-4);
+  height: var(--spacing-4);
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+}
+
+/* -------------------------------------------------------------------
+ * Tab Bar — 155:28
+ *
+ * Altura 72 = inset/sm em cima + 48 do item + inset/md embaixo. O
+ * padding de baixo maior é onde mora o indicador de home do iOS.
+ * ------------------------------------------------------------------- */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  padding: var(--space-inset-sm) var(--space-inset-lg) var(--space-inset-md);
+  background: var(--surface-default);
+  border-top: 1px solid var(--border-default);
+  padding-bottom: calc(var(--space-inset-md) + env(safe-area-inset-bottom, 0px));
+}
+
+.tab-item {
+  flex: 1 0 0;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-stack-xs);
+  padding: var(--space-inset-xs) var(--space-inset-sm);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+/* Selecionado muda só a cor — ícone e rótulo juntos. Quem lê o estado
+   de verdade é o aria-current. */
+.tab-item[aria-current="page"] {
+  color: var(--text-brand);
+}
+
+.tab-item:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 2px var(--surface-default), 0 0 0 5px var(--border-focus-ring);
+}
+
+/* -------------------------------------------------------------------
+ * Comentário opcional — 205:716
+ *
+ * Sobe por cima da vista anterior, então é absoluta dentro do corpo da
+ * tela: assim não empurra layout nem cria barra de rolagem durante a
+ * animação. A Tab Bar fica fora e continua acessível — isto é etapa,
+ * não modal, e por isso também não escurece o fundo.
+ * ------------------------------------------------------------------- */
+.view--comment {
+  position: absolute;
+  inset: 0;
+  gap: var(--space-stack-md);
+  padding: var(--space-inset-md) var(--space-screen-margin) var(--space-inset-md);
+  background: var(--surface-page);
+  /* Sem overflow aqui também: `auto` volta a criar barra — e ainda
+     cortaria os 5px do anel de foco dos botões de largura cheia. */
+  animation: view-up 490ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes view-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* Só o Pular, encostado à direita. */
+.comment__bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-inline-lg);
+}
+
+.comment__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-inset-md);
+}
+
+.comment__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-xs);
+}
+
+.comment__title {
+  margin: 0;
+  color: var(--text-brand);
+}
+
+.comment__hint {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* Campo e aviso andam juntos: o aviso é legenda do campo, não do botão. */
+.comment__input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-xs);
+}
+
+.textarea {
+  width: 100%;
+  height: 129px;
+  resize: none;
+  padding: var(--space-inset-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  font-family: var(--app-font-family-base);
+}
+
+.textarea::placeholder {
+  color: var(--text-disabled);
+}
+
+/* Contorno de CONTROLE em foco: border/default sozinho dá 1,5:1 e
+   reprova 1.4.11 quando é ele que marca o campo ativo. */
+.textarea:focus-visible {
+  outline: none;
+  border-color: var(--border-brand);
+  box-shadow: 0 0 0 2px var(--surface-default), 0 0 0 5px var(--border-focus-ring);
+}
+
+.comment__submit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.comment__status {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.comment__status[hidden] {
+  display: none;
+}
+
+/* -------------------------------------------------------------------
+ * Confirmação do check-in
+ * ------------------------------------------------------------------- */
+.done {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-section);
+}
+
+.done__content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-inset-lg);
+}
+
+.done__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-md);
+}
+
+/* Palco: só existe para o que voa ter de quem ser absoluto. Essas
+   partículas estouram PARA FORA do card, então o palco não pode cortar
+   nada — quem corta é o card, uma camada abaixo.
+ *
+ * O palco é também onde mora a rampa da cena. Um `data-sky` só, escrito
+ * pelo JS, resolve quatro coisas de uma vez: a cor da nuvem que voa, o
+ * tamanho do clarão, a força da luz e o peso do céu do card. A escada é
+ * a mesma do card de seleção e vale a mesma leitura — a claridade vai
+ * cedendo lugar à nuvem e à chuva, e nenhum clima é pintado como erro.
+ * ------------------------------------------------------------------- */
+.done__stage {
+  position: relative;
+
+  --done-cloud: var(--weather-cloud-light);
+  --done-glow-peak: 0.9;
+  --done-shine-peak: 0.55;
+  --done-sky-tint: var(--weather-sun);
+  --done-sky-opacity: 0.16;
+}
+
+.done__stage[data-sky="partly"] {
+  --done-glow-peak: 0.62;
+  --done-shine-peak: 0.34;
+  --done-sky-opacity: 0.08;
+}
+
+.done__stage[data-sky="cloudy"] {
+  --done-cloud: var(--weather-cloud-overcast);
+  --done-glow-peak: 0.38;
+  --done-shine-peak: 0.16;
+  --done-sky-tint: var(--weather-cloud-overcast);
+  --done-sky-opacity: 0.14;
+}
+
+.done__stage[data-sky="rain"] {
+  --done-cloud: var(--weather-cloud-rain);
+  --done-glow-peak: 0.22;
+  --done-shine-peak: 0.1;
+  --done-sky-tint: var(--weather-cloud-rain);
+  --done-sky-opacity: 0.18;
+}
+
+/* Tempestade não tem clarão de pouso nem luz de ambiente — as duas
+   camadas somem mais abaixo. O que sobra é o pisca do relâmpago e a
+   faísca amarela, a mesma luz do raio. É decisão, não esquecimento. */
+.done__stage[data-sky="storm"] {
+  --done-cloud: var(--weather-cloud-storm);
+  --done-sky-tint: var(--weather-cloud-storm);
+  --done-sky-opacity: 0.24;
+}
+
+/* O céu do card, igual ao da seleção: camada de cenário por cima da
+   superfície de marca, nunca no lugar dela. Mesma ressalva de contrato
+   que está lá em cima — é cor de illustration.css, não de UI. */
+.done__sky {
+  position: absolute;
+  inset: 0;
+  background-color: var(--done-sky-tint);
+  opacity: var(--done-sky-opacity);
+}
+
+/* O card aqui abraça a ilustração — 48 de lado em vez dos 156 fixos da
+   tela de seleção. 48 é medida do desenho, não da escala de espaço.
+   O overflow:hidden é o que faz a máscara da entrada da ilustração:
+   ela começa fora da borda esquerda e nenhum elemento extra é preciso. */
+.done__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-inset-xl) 48px;
+  border-radius: var(--radius-md);
+  background: var(--surface-brand-subtle);
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------------
+ * Coreografia da confirmação
+ *
+ * Um tempo só, lido de cima para baixo. Os atrasos estão em cada regra
+ * e formam esta ordem:
+ *
+ *   0ms    card abre com um pique curto
+ *   180ms  ilustração voa de fora, inclinada, e endireita ao pousar
+ *   620ms  clarão no pouso  ·  luz varre o card da esquerda para a direita
+ *   700ms  três ou quatro peças estouram em volta e ficam vivas
+ *   820ms  ilustração entra em flutuação e não para mais
+ *   520ms+ rótulo, texto e botões sobem em cascata
+ *
+ * O TEMPO é o mesmo nos cinco céus — o que muda é do que a cena é
+ * feita. Clarão e varredura vão perdendo força, e a faísca vai cedendo
+ * lugar à nuvem e à gota, na mesma rampa do card de seleção. Ver
+ * .done__stage acima (peso e luz) e .done__escape abaixo (o que voa).
+ *
+ * Tudo fecha em ~1,4s. Nada aqui é informação: o rótulo e o texto já
+ * estão no DOM desde o primeiro quadro (a animação mexe em opacidade,
+ * não em conteúdo) e o anúncio ao leitor de tela sai no mesmo instante
+ * do registro, sem esperar a cena.
+ *
+ * Os px soltos daqui são geometria de desenho — distância de voo,
+ * altura de flutuação, tamanho de faísca. Não são espaçamento e por
+ * isso não saem da escala, mesma exceção do knob do Slider.
+ * ------------------------------------------------------------------- */
+.done__card {
+  animation: done-card-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes done-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+}
+
+/* A entrada mora na órbita, a flutuação mora na arte. Se as duas
+   ficassem no mesmo elemento, a segunda transform apagaria a primeira. */
+.done__orbit {
+  display: block;
+  animation: done-art-fly 640ms 180ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* -190% tira os 64 da arte mais os 48 de padding: começa fora da borda
+   do card, não meio aparecida. A inclinação é o que dá o ar de "chegou
+   voando" em vez de "escorregou". */
+@keyframes done-art-fly {
+  from {
+    transform: translateX(-190%) rotate(-14deg);
+  }
+}
+
+/* O seletor é por atributo de propósito: paintWeather() reescreve o
+   className do span a cada registro, então classe usada como gancho de
+   animação seria apagada no próximo check-in. */
+.done [data-weather-slot="done"] {
+  animation: done-float 3.4s 820ms ease-in-out infinite alternate both;
+}
+
+@keyframes done-float {
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+/* Clarão do pouso: nasce atrás da arte, abre e some. Branco de
+   superfície, não cor de ilustração — é luz, não desenho. O pico vem da
+   rampa: o céu limpo estoura, a chuva mal acende. */
+.done__glow {
+  position: absolute;
+  width: 132px;
+  height: 132px;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(closest-side, var(--surface-default), transparent);
+  opacity: 0;
+  animation: done-glow 760ms 620ms ease-out both;
+}
+
+@keyframes done-glow {
+  from {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  45% {
+    opacity: var(--done-glow-peak);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+.done__stage[data-sky="storm"] .done__glow {
+  display: none;
+}
+
+/* A varredura de luz — a faixa cruza o card da esquerda para a direita
+   e o overflow do card corta as pontas. */
+.done__shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    var(--surface-default) 50%,
+    transparent 62%
+  );
+  opacity: 0;
+  animation: done-shine 900ms 380ms ease-in-out both;
+}
+
+@keyframes done-shine {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  30% {
+    opacity: var(--done-shine-peak);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* De nublado para baixo a luz não atravessa mais: vira clarão difuso
+   vindo de cima, e só respira. Mesma troca do card de seleção — a
+   diferença é que aqui ela fica, porque a cena de confirmação não sai
+   da tela sozinha. */
+.done__stage[data-sky="cloudy"] .done__shine,
+.done__stage[data-sky="rain"] .done__shine {
+  background: radial-gradient(120% 80% at 50% -10%, var(--surface-default), transparent 70%);
+  animation: done-haze 7s 380ms ease-in-out infinite both;
+}
+
+@keyframes done-haze {
+  from {
+    opacity: 0;
+  }
+  20%,
+  100% {
+    opacity: calc(var(--done-shine-peak) * 0.35);
+  }
+  60% {
+    opacity: var(--done-shine-peak);
+  }
+}
+
+/* Tempestade troca a varredura pelo pisca do relâmpago: dois tempos,
+   com falha no meio, igual ao da ilustração. É a única luz da cena. */
+.done__stage[data-sky="storm"] .done__shine {
+  background: radial-gradient(120% 90% at 50% -10%, var(--weather-sun), transparent 70%);
+  animation: done-strike 4.4s 500ms linear infinite both;
+}
+
+@keyframes done-strike {
+  0%,
+  11%,
+  100% {
+    opacity: 0;
+  }
+  1.5% {
+    opacity: 0.5;
+  }
+  3% {
+    opacity: 0.04;
+  }
+  5% {
+    opacity: 0.62;
+  }
+}
+
+/* -------------------------------------------------------------------
+ * O que voa para fora do card
+ *
+ * Três tipos, uma entrada só. Todos estouram no mesmo pique e depois
+ * cada um vive do jeito do que é: a faísca pisca, a nuvem navega, a
+ * gota cai. Quais aparecem em cada céu é a lista ESCAPE do JS.
+ *
+ * A camada não corta nada e não recebe toque: ela existe para as peças
+ * terem coordenada, e as coordenadas são de propósito NEGATIVAS —
+ * o estouro para fora é o gesto da cena.
+ * ------------------------------------------------------------------- */
+.done__escape {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.done__bit {
+  position: absolute;
+  opacity: 0;
+  animation: done-bit-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Faísca de quatro pontas. Amarelo da ilustração, não de UI: é a mesma
+   luz do sol e do raio da tempestade — a que sobra em qualquer céu. */
+.done__bit--spark {
+  width: 14px;
+  height: 14px;
+  background: var(--weather-sun);
+  clip-path: polygon(
+    50% 0%,
+    61% 39%,
+    100% 50%,
+    61% 61%,
+    50% 100%,
+    39% 61%,
+    0% 50%,
+    39% 39%
+  );
+  animation:
+    done-bit-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    done-spark-twinkle 2.4s ease-in-out infinite alternate;
+}
+
+/* Nuvem: corpo em pílula e dois montes em ::before/::after. É desenho
+   de CSS e não a arte do Figma de propósito — a nuvem da ilustração
+   reaparecendo em miniatura leria como cópia, e esta aqui é silhueta,
+   não segundo desenho. A cor vem da rampa do palco. */
+.done__bit--puff {
+  width: 26px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--done-cloud);
+  animation:
+    done-bit-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    done-puff-sail 6s ease-in-out infinite alternate;
+}
+
+.done__bit--puff::before,
+.done__bit--puff::after {
+  content: "";
+  position: absolute;
+  border-radius: var(--radius-pill);
+  background: inherit;
+}
+
+.done__bit--puff::before {
+  width: 15px;
+  height: 15px;
+  left: 4px;
+  top: -7px;
+}
+
+.done__bit--puff::after {
+  width: 10px;
+  height: 10px;
+  right: 4px;
+  top: -5px;
+}
+
+/* Gota: mesma proporção e mesma inclinação de 15° das três do desenho
+   da chuva, e a mesma cor da rampa. O `rotate` é propriedade separada
+   justamente para não brigar com o transform das animações. */
+.done__bit--drop {
+  width: 3px;
+  height: 11px;
+  border-radius: var(--radius-pill);
+  background: var(--weather-cloud-rain);
+  rotate: 15deg;
+  animation:
+    done-bit-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    done-bit-fall 1.6s linear infinite;
+}
+
+/* Quatro posições fora do card, em alturas diferentes — em linha ou
+   simétricas viram enfeite de banner. O slot só diz onde e quando; o
+   tamanho é do tipo, e a variação sai do `scale`, que é propriedade
+   separada e por isso sobrevive às transforms das animações. */
+.done__bit--a {
+  top: -6px;
+  right: 10px;
+  animation-delay: 700ms, 1220ms;
+}
+
+.done__bit--b {
+  bottom: 4px;
+  left: -8px;
+  scale: 0.78;
+  animation-delay: 820ms, 1500ms;
+}
+
+.done__bit--c {
+  top: 30%;
+  right: -10px;
+  scale: 0.62;
+  animation-delay: 940ms, 1800ms;
+}
+
+.done__bit--d {
+  bottom: -8px;
+  left: 32%;
+  scale: 0.86;
+  animation-delay: 880ms, 1640ms;
+}
+
+@keyframes done-bit-pop {
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(-45deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.25) rotate(10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes done-spark-twinkle {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+}
+
+/* O vaivém da nuvem é o mesmo gesto do céu do check-in, mais curto:
+   ela navega, não flutua. */
+@keyframes done-puff-sail {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0.72;
+    transform: translate(5px, -2px);
+  }
+}
+
+/* A gota cai e reaparece em cima, como as do desenho — mesmo ritmo,
+   fora do card. */
+@keyframes done-bit-fall {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+}
+
+/* Cascata do texto: mesma subida curta, atrasos diferentes. */
+.done__label,
+.done__text p,
+.done__actions .btn {
+  animation: done-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes done-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.done__label {
+  margin: 0;
+  color: var(--text-brand);
+  /* A caixa alta é do token, nunca do conteúdo. */
+  text-transform: uppercase;
+  animation-delay: 520ms;
+}
+
+.done__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-inset-sm);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.done__text p {
+  margin: 0;
+}
+
+.done__text p:nth-child(1) {
+  animation-delay: 620ms;
+}
+
+.done__text p:nth-child(2) {
+  animation-delay: 700ms;
+}
+
+/* A contagem da sequência é o número que o aluno veio ver: ganha peso,
+   cor de marca e um pique próprio, meio passo depois da linha subir. */
+.done__count {
+  display: inline-block;
+  color: var(--text-brand);
+  animation: done-count-pop 460ms 820ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes done-count-pop {
+  from {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.done__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.done__actions .btn:nth-child(1) {
+  animation-delay: 900ms;
+}
+
+.done__actions .btn:nth-child(2) {
+  animation-delay: 980ms;
+}
+
+/* -------------------------------------------------------------------
+ * Trava do Histórico
+ *
+ * Duas vistas na mesma tela, como no check-in: lock -> list. A troca é
+ * seca, sem animação de entrada — a lista aparecendo com gesto de
+ * "abriu o cofre" transformaria a privacidade em premiação, e ela é o
+ * padrão, não o prêmio.
+ *
+ * O texto da trava fica em cima e o teclado embaixo (margin-top:auto),
+ * na faixa do polegar. Entre os dois, os pontos: o que se olha enquanto
+ * se digita fica no meio do caminho entre a pergunta e a mão.
+ * ------------------------------------------------------------------- */
+.vault {
+  flex: 1 0 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-lg);
+}
+
+/* A lista é quem rola. O respiro de baixo é o anel de foco: sem ele o
+   contorno do último item entraria na área rolável. */
+.vault--open {
+  overflow-y: auto;
+  padding-bottom: var(--space-inset-xs);
+}
+
+.vault__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-sm);
+  padding-top: var(--space-inset-lg);
+}
+
+/* 56 é enquadramento do ícone de 20, não espaçamento — mesma exceção
+   do card da ilustração. */
+.vault__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand-subtle);
+  color: var(--text-brand);
+}
+
+.vault__title {
+  margin: 0;
+  text-align: center;
+  color: var(--text-brand);
+}
+
+.vault__hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.vault__entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-stack-md);
+}
+
+.vault__dots {
+  display: flex;
+  gap: var(--space-inline-md);
+}
+
+/* O ponto vazio é contorno em border/strong (3:1, é ele que diz quanto
+   falta) e o cheio é a superfície de marca. Tamanho igual nos dois: o
+   que muda é preenchimento, não medida — assim a fila não dança. */
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 2px var(--border-strong);
+  transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.pin-dot[data-filled] {
+  background: var(--surface-brand);
+  box-shadow: inset 0 0 0 2px var(--surface-brand);
+  transform: scale(1.1);
+}
+
+/* Erro não é só a sacudida: a sacudida some com movimento reduzido e o
+   texto do porquê fica sempre. */
+.vault__dots[data-error] {
+  animation: pin-shake 400ms ease;
+}
+
+.vault__dots[data-error] .pin-dot {
+  box-shadow: inset 0 0 0 2px var(--border-critical);
+}
+
+@keyframes pin-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-8px);
+  }
+  35% {
+    transform: translateX(7px);
+  }
+  55% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+/* Altura reservada desde o primeiro quadro: o aviso não pode empurrar o
+   teclado para baixo no instante em que o dedo já está a caminho. */
+.vault__status {
+  margin: 0;
+  min-height: var(--spacing-20);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.vault__status[data-tone="error"] {
+  color: var(--text-critical);
+}
+
+/* -------------------------------------------------------------------
+ * Teclado numérico
+ *
+ * Três colunas em 328 com 8 de gap dão teclas de 104 × 64 — bem acima
+ * dos 44 de alvo e com folga entre elas, que é o que evita o toque
+ * vizinho quando o celular está na mão e andando.
+ * ------------------------------------------------------------------- */
+.keypad {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-inline-sm);
+}
+
+.key {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-inset-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 100ms ease, transform 100ms ease;
+}
+
+.key:hover {
+  background: var(--surface-subtle);
+}
+
+/* O pique no toque não é enfeite: sem hover no celular, ele é o único
+   retorno de que a tecla pegou — e sem retorno o dedo bate de novo. */
+.key:active {
+  background: var(--surface-muted);
+  transform: scale(0.96);
+}
+
+.key:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 5px var(--border-focus-ring);
+}
+
+/* A tecla de apagar é secundária: sem contorno e sem fundo, ela não
+   disputa com os números. */
+.key--action {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+/* O buraco do canto. É <span>, não botão desabilitado: um alvo morto no
+   teclado seria parada de tabulação e leitura de tela por nada. */
+.key--empty {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault__dots[data-error],
+  .pin-dot,
+  .key {
+    animation: none;
+    transition: none;
+  }
+
+  .pin-dot[data-filled] {
+    transform: none;
+  }
+
+  .key:active {
+    transform: none;
+  }
+}
+
+/* -------------------------------------------------------------------
+ * Histórico e Perfil
+ * ------------------------------------------------------------------- */
+.section-title {
+  margin: 0;
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-md);
+  padding: var(--space-inset-md);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-default);
+}
+
+.history__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.history__day {
+  color: var(--text-primary);
+}
+
+.history__state {
+  color: var(--text-secondary);
+}
+
+.history__empty {
+  padding: var(--space-inset-lg);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-lg);
+}
+
+.profile__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline-md);
+}
+
+.profile__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.profile__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-inline-md);
+  padding: var(--space-inset-md);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-default);
+}
+
+.profile__row span:last-child {
+  color: var(--text-secondary);
+}
+
+/* -------------------------------------------------------------------
+ * Modal do SOS
+ * ------------------------------------------------------------------- */
+.sheet {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: flex-end;
+  background: rgba(10, 13, 12, 0.4); /* surface/inverse a 40% */
+}
+
+.sheet[data-open] {
+  display: flex;
+}
+
+.sheet__panel {
+  width: 100%;
+  /* Folha alta: o campo de texto pede espaço e o teclado sobe por cima
+     dela. 628 é a altura do Figma; o mínimo com a tela é para a folha
+     nunca passar por baixo da barra de status. */
+  height: min(628px, calc(100% - 44px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-lg);
+  padding: var(--space-inset-lg) var(--space-screen-margin);
+  padding-bottom: calc(var(--space-inset-lg) + env(safe-area-inset-bottom, 0px));
+  background: var(--surface-default);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  animation: sheet-in 200ms ease;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view--comment,
+  .sheet__panel,
+  .slider__fill,
+  .slider__knob,
+  .weather-row__item,
+  .done__card,
+  .done__orbit,
+  .done [data-weather-slot="done"],
+  .done__label,
+  .done__text p,
+  .done__count,
+  .done__actions .btn,
+  /* `.weather` no meio do caminho não é enfeite de seletor: as regras
+     por clima são `.checkin__card .weather--x .weather__art`, três
+     classes. Sem o degrau a mais aqui, elas venciam esta e o céu
+     continuava se mexendo com movimento reduzido ligado. */
+  .checkin__card .weather .weather__art,
+  .checkin__card .weather .weather__drops line,
+  .checkin__sky {
+    animation: none;
+    transition: none;
+  }
+
+  /* O peso do céu fica: é cor de estado, não movimento. O que sai é a
+     luz que se mexe. */
+  .checkin__shine {
+    display: none;
+  }
+
+  /* Halo, nuvem fantasma e clarão só existem enquanto se mexem. Parados
+     viram mancha em cima do desenho — a fantasma é a pior, fica uma
+     segunda nuvem colada. Somem inteiras. */
+  .weather__halo,
+  .weather__ghost,
+  .weather__flash {
+    display: none;
+  }
+
+  /* Clarão, varredura e o que voa não têm versão parada: sem movimento
+     eles viram sujeira em cima do card. Somem inteiros — nada se perde,
+     porque nenhum deles diz nada. O céu do card fica, como no da
+     seleção: é cor de estado, não movimento. */
+  .done__glow,
+  .done__shine,
+  .done__escape {
+    display: none;
+  }
+}
+
+.sheet__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-xs);
+}
+
+.sheet__title {
+  margin: 0;
+  color: var(--text-brand);
+}
+
+.sheet__body {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* O campo é quem estica: sobrando altura, ela fica entre o texto e os
+   botões, e as ações continuam ancoradas no rodapé da folha. */
+.sheet__field {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.sheet__label {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.sheet__status {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.sheet__status[hidden] {
+  display: none;
+}
+
+.sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack-sm);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

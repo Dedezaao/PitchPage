@@ -1,0 +1,2710 @@
+/* Pitch landing — intentionally loaded after app.css.
+ * This layer restores document flow without changing the Axon app module. */
+
+:root {
+  color-scheme: light;
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* -------------------------------------------------------------------
+ * Dark mode — a deliberately designed second surface for the landing,
+ * not an inversion filter. Effective theme is resolved by landing.js
+ * (system preference on first visit, explicit choice afterward,
+ * persisted in localStorage) into `data-theme` on <html>, set by an
+ * inline pre-paint script in <head> so there is no flash of the wrong
+ * theme. Only the semantic layer is touched here — primitives.css and
+ * illustration.css stay put, which is what keeps this scoped to
+ * landing presentation rather than redefining the design system.
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] body.landing {
+  --surface-page: #10161a;
+  --surface-default: #171f22;
+  --surface-subtle: #16282b;
+  --surface-muted: #1c2529;
+  --surface-brand-subtle: #17343a;
+  --surface-critical: #3a1f1e;
+  --surface-critical-strong: #4a2622;
+
+  --text-primary: #f2f4f3;
+  --text-secondary: #a9b2b0;
+  --text-tertiary: #7c8886;
+  --text-brand: #5fd3de;
+  --text-disabled: #5a6462;
+  --text-critical: #ff8a7f;
+
+  --border-default: #2c363a;
+  --border-subtle: #202a2e;
+  --border-strong: #4a5559;
+  --border-brand: #2a99a6;
+  --border-critical: #e5564a;
+  --border-focus-ring: #5fd3de;
+
+  --brand-900: #8fe6ee;
+  --brand-1000: #bdf0f5;
+
+  --elevation-sm: 0 12px 36px rgb(0 0 0 / 40%);
+}
+
+/* The real Axon prototype keeps its authentic light surface regardless
+   of the landing's theme (brief §7 / §24) — falsifying the product UI
+   to match a marketing theme would misrepresent what the app actually
+   looks like. Re-declaring the same tokens back to their original
+   primitives here means every descendant inside .device resolves to
+   the light values no matter what body.landing overrides above it. */
+html[data-theme="dark"] .device {
+  --surface-page: var(--neutral-25);
+  --surface-default: var(--neutral-0);
+  --surface-subtle: var(--brand-50);
+  --surface-muted: var(--neutral-100);
+  --surface-brand-subtle: var(--brand-100);
+  --surface-critical: var(--red-50);
+  --surface-critical-strong: var(--red-100);
+
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary: var(--neutral-500);
+  --text-brand: var(--brand-600);
+  --text-disabled: var(--neutral-500);
+  --text-critical: var(--red-700);
+
+  --border-default: var(--neutral-300);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-500);
+  --border-brand: var(--brand-500);
+  --border-critical: var(--red-500);
+  --border-focus-ring: var(--brand-700);
+
+  --brand-900: #004950;
+  --brand-1000: #00383e;
+
+  --elevation-sm: 0 12px 36px rgb(30 33 32 / 10%);
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  height: auto;
+  margin: 0;
+}
+
+body.landing {
+  display: block;
+  align-items: initial;
+  justify-content: initial;
+  overflow-x: clip;
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--app-font-family-base);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+.landing *,
+.landing *::before,
+.landing *::after {
+  box-sizing: border-box;
+}
+
+/* :where() again (see the .landing a reset above) — a single-class
+   component rule like .theme-logo--dark{display:none} must be able to
+   win over this baseline reset without a specificity fight. */
+:where(.landing img, .landing svg) {
+  display: block;
+  max-width: 100%;
+}
+
+/* :where() keeps this reset at zero specificity on purpose — every
+   single-class component color rule (.hero__cta, .site-brand,
+   .cta__primary, ...) is meant to win over it automatically. A plain
+   `.landing a` selector was silently beating all of them (class+tag
+   outranks a single class), which is why several CTAs were rendering
+   inherited dark text instead of their intended color. */
+:where(.landing a) {
+  color: inherit;
+}
+
+.landing button,
+.landing a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.landing :focus-visible {
+  outline: 3px solid var(--border-focus-ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: var(--spacing-12);
+  left: var(--spacing-12);
+  padding: var(--spacing-12) var(--spacing-16);
+  transform: translateY(-180%);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-sm);
+  background: var(--surface-default);
+  color: var(--text-brand);
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Belt-and-suspenders with :root's scroll-padding-top below: every
+   section (and the footer) gets its own scroll-margin-top, so anchor
+   navigation, scrollIntoView(), and browser fragment jumps all clear
+   the fixed header the same way regardless of which mechanism actually
+   moved the scroll position (brief §7 — some sections had little
+   enough of their own top padding that their heading could land
+   directly under the header without this). */
+.landing section,
+.site-footer {
+  position: relative;
+  scroll-margin-top: 5.5rem;
+}
+
+/* -------------------------------------------------------------------
+ * Header
+ * ------------------------------------------------------------------- */
+.site-header {
+  position: fixed;
+  z-index: 20;
+  inset: 0 0 auto;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  transition: background-color 240ms ease, border-color 240ms ease;
+}
+
+/* Derived from the theme surface token, not a hardcoded light color —
+   this was the actual cause of the header staying white in dark mode
+   regardless of the rest of the page. */
+.site-header.is-scrolled {
+  border-color: var(--border-subtle);
+  background: color-mix(in srgb, var(--surface-page) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.site-nav {
+  width: min(100% - 2 * var(--spacing-24), 76rem);
+  min-height: 5rem;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-32);
+}
+
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  color: var(--brand-900);
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+}
+
+.site-brand img {
+  width: 2.125rem;
+  height: 1.875rem;
+  object-fit: contain;
+}
+
+.site-nav__links {
+  display: flex;
+  align-items: center;
+  gap: clamp(var(--spacing-24), 3vw, var(--spacing-48));
+}
+
+.site-nav__links a {
+  position: relative;
+  padding-block: var(--spacing-8);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.site-nav__links a::after {
+  position: absolute;
+  content: "";
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: right;
+  background: var(--surface-brand);
+  transition: transform 180ms ease;
+}
+
+.site-nav__links a:hover {
+  color: var(--text-brand);
+}
+
+.site-nav__links a:hover::after,
+.site-nav__links a:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Subtle active-chapter indicator — the same underline hover already
+   uses, just held open. Not a progress bar, no extra chrome. */
+.site-nav__links a.is-active {
+  color: var(--text-brand);
+}
+
+.site-nav__links a.is-active::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Theme-aware logo pairs: two <img> elements share a spot, CSS shows
+   the one that matches the current theme. No JS, no flash — the
+   inline pre-paint script has already set data-theme by the time
+   these rules apply. */
+.theme-logo--dark {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-logo--light {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-logo--dark {
+  display: block;
+}
+
+.site-nav__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.theme-toggle {
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--surface-default);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--border-default);
+  color: var(--text-brand);
+}
+
+.theme-toggle__icon {
+  position: absolute;
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 220ms ease, transform 320ms ease;
+}
+
+.theme-toggle__icon--moon {
+  opacity: 0;
+  transform: rotate(-45deg) scale(0.6);
+}
+
+html[data-theme="dark"] .theme-toggle__icon--sun {
+  opacity: 0;
+  transform: rotate(45deg) scale(0.6);
+}
+
+html[data-theme="dark"] .theme-toggle__icon--moon {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hamburger — hidden on desktop, where the link row is already
+   compact enough to show in full. */
+.nav-toggle {
+  display: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--surface-default);
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+}
+
+.nav-toggle__bar {
+  width: 1rem;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--text-primary);
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle__bar:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.nav-toggle[aria-expanded="true"] .nav-toggle__bar:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+.mobile-nav {
+  display: none;
+}
+
+/* -------------------------------------------------------------------
+ * Hero
+ * ------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding: clamp(7.5rem, 14vh, 10rem) var(--spacing-24) clamp(5rem, 9vh, 7rem);
+  isolation: isolate;
+}
+
+.hero__inner {
+  width: min(100%, 76rem);
+  min-width: 0;
+  max-width: 100%;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 0.7fr);
+  align-items: center;
+  gap: clamp(var(--spacing-48), 8vw, 7.5rem);
+}
+
+.hero__copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.hero__eyebrow {
+  margin: 0 0 var(--spacing-24);
+  color: var(--text-brand);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero__title {
+  max-width: 15ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.75rem, 5.4vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.hero__support {
+  width: 100%;
+  max-width: 34rem;
+  margin: clamp(var(--spacing-24), 3.5vw, var(--spacing-40)) 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(1.0625rem, 1.45vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-32);
+  margin-top: var(--spacing-32);
+}
+
+.hero__cta {
+  width: fit-content;
+  min-height: 3rem;
+  padding: 0 var(--spacing-24);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand);
+  color: var(--text-inverse);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.hero__cta:hover {
+  background: var(--surface-brand-hover);
+  transform: translateY(-1px);
+}
+
+.hero__cta svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hero__cta--secondary {
+  padding: 0;
+  border-bottom: 1px solid var(--border-brand);
+  background: none;
+  color: var(--text-brand);
+  border-radius: 0;
+}
+
+.hero__cta--secondary:hover {
+  background: none;
+  color: var(--brand-700);
+  transform: none;
+}
+
+/* -------------------------------------------------------------------
+ * A minimal emotional skyscape — built from the same authentic weather
+ * SVGs used throughout the product (assets/weather/, the exact files
+ * app.js paints inside the real device), not an abstract shape. One
+ * sun, one primary cloud, one lighter background cloud, and two rare
+ * soft events (a breath of rain, a distant flash), each on its own
+ * independent slow cycle so they never repeat in an obvious pattern —
+ * one continuous sky, not five posed states. No card, no border, no
+ * phone: the elements float directly in the page, nothing frames them.
+ * ------------------------------------------------------------------- */
+.hero-sky {
+  position: relative;
+  width: clamp(16rem, 25vw, 21rem);
+  aspect-ratio: 0.95;
+  justify-self: center;
+}
+
+.hero-sky__haze {
+  position: absolute;
+  inset: -15%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--weather-sun) 15%, transparent),
+    transparent 72%
+  );
+}
+
+.hero-sky__halo {
+  position: absolute;
+  z-index: 1;
+  top: 2%;
+  right: 4%;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--weather-sun), transparent 72%);
+  opacity: 0.22;
+  animation: sky-halo-pulse 11s ease-in-out infinite;
+}
+
+.hero-sky__sun {
+  position: absolute;
+  z-index: 2;
+  top: 6%;
+  right: 8%;
+  width: clamp(4.5rem, 8vw, 5.75rem);
+  height: auto;
+  animation: sky-sun-breathe 11s ease-in-out infinite;
+}
+
+.hero-sky__cloud {
+  position: absolute;
+  height: auto;
+}
+
+.hero-sky__cloud--back {
+  z-index: 3;
+  top: 20%;
+  left: -4%;
+  width: 58%;
+  opacity: 0.55;
+  animation: sky-cloud-back-drift 24s ease-in-out infinite;
+}
+
+.hero-sky__cloud--front {
+  z-index: 4;
+  bottom: 14%;
+  left: 10%;
+  width: 72%;
+  animation: sky-cloud-front-drift 16s ease-in-out infinite;
+}
+
+.hero-sky__rain {
+  position: absolute;
+  z-index: 3;
+  bottom: 4%;
+  left: 26%;
+  width: 3.25rem;
+  height: 3.25rem;
+  opacity: 0;
+  animation: sky-rain 34s ease-in-out infinite;
+}
+
+.hero-sky__flash {
+  position: absolute;
+  z-index: 1;
+  top: 8%;
+  left: -6%;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--weather-sun), transparent 70%);
+  opacity: 0;
+  animation: sky-flash 50s linear infinite;
+}
+
+/* The plain (non-animated) opacity/transform values above are what
+   reduced-motion visitors see permanently, and what every visitor sees
+   for the first instant before the animation engine takes over: sun
+   and both clouds present and calm, rain and flash both invisible
+   (their resting state) rather than frozen mid-event. */
+
+@keyframes sky-sun-breathe {
+  0%,
+  100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+
+@keyframes sky-halo-pulse {
+  0%,
+  100% { opacity: 0.16; transform: scale(0.92); }
+  50% { opacity: 0.34; transform: scale(1.08); }
+}
+
+@keyframes sky-cloud-front-drift {
+  0%,
+  100% { transform: translate(0, 0); }
+  50% { transform: translate(-4%, 1.5%); }
+}
+
+@keyframes sky-cloud-back-drift {
+  0%,
+  100% { transform: translate(0, 0); }
+  50% { transform: translate(5%, -2%); }
+}
+
+/* Rain "when appropriate," not a shower: mostly invisible, one gentle
+   rise and fall per 34s loop. */
+@keyframes sky-rain {
+  0%,
+  76%,
+  100% { opacity: 0; }
+  85% { opacity: 0.4; }
+  92% { opacity: 0.4; }
+}
+
+/* A distant flash, very rarely: two quick soft pulses near the start
+   of a full 50s cycle, invisible the rest of the time. */
+@keyframes sky-flash {
+  0%,
+  4%,
+  100% { opacity: 0; }
+  1% { opacity: 0.2; }
+  2% { opacity: 0.05; }
+  3% { opacity: 0.26; }
+}
+
+/* Illustration colors and the ambient haze were tuned against a
+   near-white page — against the dark surface the haze in particular
+   nearly disappeared. Brighter here so the scene still reads as light
+   glowing in a dark sky rather than washing out. */
+html[data-theme="dark"] .hero-sky__haze {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--weather-sun) 22%, transparent),
+    transparent 72%
+  );
+}
+
+html[data-theme="dark"] .hero-sky__halo {
+  opacity: 0.3;
+}
+
+html[data-theme="dark"] .hero-sky__cloud--back {
+  opacity: 0.7;
+}
+
+.hero__scroll {
+  position: absolute;
+  bottom: var(--spacing-24);
+  left: 50%;
+  width: 2.25rem;
+  height: 3.5rem;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: start center;
+  padding-top: var(--spacing-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+}
+
+.hero__scroll span {
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand);
+  animation: scroll-cue 2s ease-in-out infinite;
+}
+
+@keyframes scroll-cue {
+  0%, 100% { transform: translateY(0); opacity: 0.35; }
+  55% { transform: translateY(1.25rem); opacity: 1; }
+}
+
+/* Hero entrance is enhanced only after landing.js has executed. */
+.js [data-hero-item] {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity 700ms cubic-bezier(0.2, 0.72, 0.25, 1),
+              transform 700ms cubic-bezier(0.2, 0.72, 0.25, 1);
+}
+
+.js.is-ready [data-hero-item] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.js.is-ready .hero__eyebrow { transition-delay: 80ms; }
+.js.is-ready .hero__title { transition-delay: 180ms; }
+.js.is-ready .hero__support { transition-delay: 330ms; }
+.js.is-ready .hero__actions { transition-delay: 470ms; }
+.js.is-ready .hero-sky { transition-delay: 620ms; }
+.js.is-ready .hero__scroll { transition-delay: 760ms; }
+
+/* -------------------------------------------------------------------
+ * Section scaffolding shared by "Why", the central question and the
+ * demo intro — a lead, a title, generous vertical rhythm.
+ * ------------------------------------------------------------------- */
+[data-reveal-group] [data-reveal-item] {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity 700ms cubic-bezier(0.2, 0.72, 0.25, 1),
+              transform 700ms cubic-bezier(0.2, 0.72, 0.25, 1);
+}
+
+.js [data-reveal-group].is-visible [data-reveal-item] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.js [data-reveal-group].is-visible [data-reveal-item]:nth-child(2) { transition-delay: 120ms; }
+.js [data-reveal-group].is-visible [data-reveal-item]:nth-child(3) { transition-delay: 240ms; }
+.js [data-reveal-group].is-visible [data-reveal-item]:nth-child(4) { transition-delay: 360ms; }
+
+.section-eyebrow {
+  margin: 0 0 var(--spacing-16);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* -------------------------------------------------------------------
+ * Why Axon exists
+ * ------------------------------------------------------------------- */
+.why {
+  padding: clamp(6rem, 11vw, 9rem) var(--spacing-24);
+  background: var(--surface-default);
+  border-block: 1px solid var(--border-subtle);
+}
+
+.why__inner {
+  width: min(100%, 46rem);
+  margin-inline: auto;
+  display: grid;
+  justify-items: center;
+  gap: clamp(var(--spacing-64), 9vw, var(--spacing-96));
+}
+
+.why__copy {
+  display: grid;
+  justify-items: center;
+  gap: var(--spacing-24);
+  text-align: center;
+}
+
+.why__title {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3.6vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.why__lead {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(1.0625rem, 1.5vw, 1.1875rem);
+  line-height: 1.65;
+}
+
+.why__resolution {
+  max-width: 26ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 1.9vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* A quiet vertical flow: rotina → check-in → contexto → cuidado.
+   Typography and a thin line do the explaining — no flowchart boxes. */
+.why__flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.why__flow-step {
+  padding: var(--spacing-12) 0;
+}
+
+.why__flow-label {
+  color: var(--text-tertiary);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.why__flow-step--final .why__flow-label {
+  color: var(--text-brand);
+}
+
+.why__flow-line {
+  width: 1px;
+  height: clamp(2rem, 5vw, 3rem);
+  background: var(--border-default);
+}
+
+/* -------------------------------------------------------------------
+ * Como funciona — a connected rail, not four disconnected cards.
+ * ------------------------------------------------------------------- */
+.how {
+  padding: clamp(6rem, 11vw, 9rem) var(--spacing-24);
+}
+
+.how__intro {
+  width: min(100%, 68rem);
+  margin: 0 auto clamp(var(--spacing-48), 7vw, var(--spacing-80));
+}
+
+.how__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.how__rail {
+  width: min(100%, 44rem);
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.how__step {
+  position: relative;
+  padding: 0 0 clamp(var(--spacing-64), 9vw, var(--spacing-80)) var(--spacing-64);
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity 700ms cubic-bezier(0.2, 0.72, 0.25, 1),
+              transform 700ms cubic-bezier(0.2, 0.72, 0.25, 1);
+}
+
+.js .how__step.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.how__step::before {
+  position: absolute;
+  content: "";
+  top: 0.375rem;
+  bottom: 0;
+  left: 1.125rem;
+  width: 1px;
+  background: var(--border-default);
+}
+
+.how__step:last-child::before {
+  display: none;
+}
+
+.how__num {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  background: var(--surface-page);
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  transition: border-color 280ms ease, color 280ms ease, background-color 280ms ease;
+}
+
+.how__step.is-active .how__num {
+  border-color: var(--border-brand);
+  background: var(--surface-brand);
+  color: var(--text-inverse);
+}
+
+.how__step-title {
+  margin: 0 0 var(--spacing-8);
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.how__step-text {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.how__step-art {
+  margin-top: var(--spacing-20);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-16);
+}
+
+/* Height-only sizing, width auto: each weather SVG keeps its own
+   natural proportions (storm is tall, cloudy is wide) instead of being
+   squeezed into a uniform square — that squeeze was the exact cause of
+   the flattened/stretched icons this fixes. Large enough to actually
+   communicate the five-state concept, per brief §8. */
+.how__step-art img {
+  height: 2.25rem;
+  width: auto;
+  flex: none;
+}
+
+.how__step-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-8) var(--spacing-16);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.how__step-mock {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 var(--spacing-20);
+  border-radius: var(--radius-pill);
+  background: var(--surface-default);
+  box-shadow: inset 0 0 0 1px var(--border-critical);
+  color: var(--text-critical);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+/* Mobile accordion — hidden on desktop, where the rail already shows
+   every step at once. Not a shrunk rail: a genuinely different
+   interaction, one step open at a time (brief §10). */
+.how__accordion {
+  display: none;
+}
+
+.how__accordion-item {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.how__accordion-item:first-child {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.how__accordion-item h3 {
+  margin: 0;
+}
+
+.how__accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20) 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: var(--app-font-family-base);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.how__accordion-num {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  transition: border-color 220ms ease, color 220ms ease, background-color 220ms ease;
+}
+
+.how__accordion-trigger[aria-expanded="true"] .how__accordion-num {
+  border-color: var(--border-brand);
+  background: var(--surface-brand);
+  color: var(--text-inverse);
+}
+
+.how__accordion-panel {
+  padding: 0 0 var(--spacing-20) 3.25rem;
+}
+
+.how__accordion-panel p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.how__accordion-panel .how__step-art {
+  margin-top: var(--spacing-16);
+}
+
+/* The accordion panel's left indent (aligning text with the number
+   circle above) leaves less width for this row than the desktop rail
+   has, so the five icons need to be a little smaller here to stay on
+   one line without touching the viewport edge at 360px. flex-wrap
+   above is the safety net if a device is narrower still. */
+.how__accordion-panel .how__step-art img {
+  height: 1.875rem;
+}
+
+/* -------------------------------------------------------------------
+ * "Como está seu céu hoje?" — the central product moment.
+ * ------------------------------------------------------------------- */
+.question {
+  padding: clamp(6.5rem, 13vw, 10rem) var(--spacing-24);
+  background: var(--surface-default);
+  border-block: 1px solid var(--border-subtle);
+}
+
+.question__lead {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(1.0625rem, 1.8vw, 1.375rem);
+  font-weight: 500;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.question__title {
+  max-width: 14ch;
+  margin: clamp(var(--spacing-16), 2.5vw, var(--spacing-24)) auto 0;
+  color: var(--text-brand);
+  font-size: clamp(2.75rem, 7vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.weather-showcase {
+  width: min(100%, 62rem);
+  margin: clamp(var(--spacing-64), 8vw, var(--spacing-96)) auto 0;
+}
+
+/* Desktop: the five states read as one spectrum, not five unrelated
+   buttons — a continuous baseline runs behind them, echoing the real
+   app's own slider track (theme/../app.css .slider__track) on purpose,
+   so the marketing showcase already speaks the product's own visual
+   language before the visitor ever sees the real interface. */
+.weather-showcase__list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--spacing-16);
+}
+
+.weather-showcase__list::before {
+  position: absolute;
+  content: "";
+  top: 50%;
+  right: 8%;
+  left: 8%;
+  height: 2px;
+  background: var(--border-subtle);
+  z-index: -1;
+}
+
+.weather-showcase__item {
+  display: flex;
+}
+
+.weather-showcase__button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-16);
+  padding: var(--spacing-24) var(--spacing-12);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+  cursor: pointer;
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.weather-showcase__button:hover {
+  border-color: var(--border-default);
+}
+
+.weather-showcase__item.is-active .weather-showcase__button {
+  border-color: var(--border-brand);
+  background: var(--surface-brand-subtle);
+  box-shadow: var(--elevation-sm);
+  transform: translateY(-4px) scale(1.04);
+}
+
+.weather-showcase__item:not(.is-active) .weather-showcase__button {
+  opacity: 0.72;
+}
+
+.weather-showcase__art {
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+}
+
+.weather-showcase__label {
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.weather-showcase__item.is-active .weather-showcase__label {
+  color: var(--text-brand);
+}
+
+.weather-showcase__hint {
+  max-width: 40ch;
+  margin: clamp(var(--spacing-32), 4vw, var(--spacing-48)) auto 0;
+  color: var(--text-tertiary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Mobile-only stage: the selected illustration held large and centered
+   above the five real buttons (brief §2 — the five states stay
+   directly visible and tappable, no dropdown). Hidden on desktop,
+   where the tiles already carry their own icons. */
+.weather-showcase__stage {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: clamp(var(--spacing-32), 8vw, var(--spacing-48));
+}
+
+.weather-showcase__stage-art {
+  width: 6.5rem;
+  height: 6.5rem;
+  overflow: hidden;
+}
+
+.weather-showcase__stage-label {
+  margin: var(--spacing-16) 0 0;
+  color: var(--text-brand);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* -------------------------------------------------------------------
+ * Transition into the real app — the selected weather becomes a card,
+ * Demo — "Experimente o Axon"
+ * ------------------------------------------------------------------- */
+.demo {
+  padding: clamp(6rem, 10vw, 8rem) var(--spacing-24) clamp(6rem, 11vw, 9rem);
+  background: var(--surface-page);
+}
+
+.demo__inner {
+  width: min(100%, 74rem);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.85fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(var(--spacing-48), 6vw, var(--spacing-80));
+}
+
+.demo__copy {
+  min-width: 0;
+}
+
+.demo__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.demo__text {
+  max-width: 34ch;
+  margin: var(--spacing-20) 0 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.demo__note {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  margin-top: var(--spacing-32);
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
+.demo__note::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand);
+}
+
+.demo__stage {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Product-presentation composition around the device, instead of a
+   phone floating on a bare gray field. */
+.axon-demo-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding: clamp(var(--spacing-48), 6vw, var(--spacing-80));
+  border-radius: var(--radius-lg);
+  background: radial-gradient(120% 100% at 50% 8%, var(--surface-default), var(--surface-muted));
+}
+
+/* -------------------------------------------------------------------
+ * Uniform-scale device presentation.
+ *
+ * app.css's `.device` sizes itself for a standalone full-viewport
+ * prototype (360×812 by default, 100%×100% below 840px of *viewport
+ * height* or 400px of width). Embedded here, that second rule would
+ * blow the device up to the size of the whole stage — so it's
+ * neutralized below, and the device instead keeps its true native
+ * 360×812 box always, uniformly scaled down by initAxonScale() in
+ * landing.js via a single `--axon-scale` custom property.
+ *
+ * Root cause of the old bug this replaces: the previous override gave
+ * width and max-height completely independent constraints
+ * (`min(22.5rem, 100%)` vs `78vh`), so whenever the height clamp bit
+ * but the width one didn't, the rendered box's aspect ratio drifted
+ * away from 360:812. The internal check-in layout is built against
+ * that exact native canvas (fixed rem/px spacing, not
+ * percentage-of-container), so a mismatched box compressed it into
+ * itself — slider overlapping buttons, "Preciso conversar agora"
+ * colliding with the weather row, etc. Scaling both axes by the same
+ * factor via transform, instead of constraining them separately via
+ * width/height, is what keeps proportions intact at any size.
+ *
+ * .axon-demo-viewport reserves exactly the resulting scaled footprint
+ * (width/height both derive from the same --axon-scale) so shrinking
+ * the device never leaves an invisible full-size gap in the layout.
+ * ------------------------------------------------------------------- */
+/* --axon-scale is set by initAxonScale() directly on this element (not
+   an ancestor) and read here with a `1` fallback for the instant
+   before that script runs — declaring a local default on this same
+   element would otherwise always win over one set from outside it. */
+.axon-demo-viewport {
+  position: relative;
+  width: calc(360px * var(--axon-scale, 1));
+  height: calc(812px * var(--axon-scale, 1));
+}
+
+.axon-demo-viewport .device {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 360px;
+  height: 812px;
+  transform: scale(var(--axon-scale, 1));
+  transform-origin: top left;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-sm);
+}
+
+/* -------------------------------------------------------------------
+ * Handoff — "E o que acontece depois que ele responde?" The opening
+ * question of the professional-care chapter, still in family language.
+ * ------------------------------------------------------------------- */
+.handoff {
+  padding: clamp(5.5rem, 10vw, 8rem) var(--spacing-24);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-default);
+  text-align: center;
+}
+
+.handoff__eyebrow {
+  margin: 0 0 var(--spacing-12);
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.handoff__title {
+  max-width: 22ch;
+  margin: 0 auto;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.handoff__text {
+  max-width: 38ch;
+  margin: var(--spacing-16) auto 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+/* One explanatory transformation instead of a chip floating alone
+   followed by a near-duplicate of itself (brief §13): registro →
+   contexto → visão do profissional, playing once on scroll-in via the
+   same play-once-on-intersect pattern used by the ecosystem and
+   dashboard stories. */
+.handoff__flow {
+  margin: clamp(var(--spacing-40), 6vw, var(--spacing-64)) auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.handoff__flow-tag {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 560ms ease;
+}
+
+.handoff__flow[data-handoff-story].is-playing .handoff__flow-tag {
+  opacity: 1;
+}
+
+.handoff__flow-tag--dash {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-brand);
+  font-weight: 700;
+}
+
+.handoff__flow-line {
+  width: 1px;
+  height: clamp(2rem, 5vw, 2.5rem);
+  margin: var(--spacing-12) 0;
+  background: var(--border-default);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 480ms ease;
+}
+
+.handoff__flow[data-handoff-story].is-playing .handoff__flow-line {
+  transform: scaleY(1);
+}
+
+.handoff__flow[data-handoff-story].is-playing [data-handoff-step="1"] {
+  transition-delay: 500ms;
+}
+
+.handoff__flow[data-handoff-story].is-playing [data-handoff-step="2"] {
+  transition-delay: 1100ms;
+}
+
+/* The minimal, illustrative "registration leaving the app" — same
+   student, same state the visitor just saw in the live demo. */
+.handoff__chip {
+  width: fit-content;
+  margin: var(--spacing-16) auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  padding: var(--spacing-12) var(--spacing-20) var(--spacing-12) var(--spacing-12);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--surface-page);
+  box-shadow: var(--elevation-sm);
+}
+
+.handoff__chip-avatar {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-brand-subtle);
+  color: var(--brand-1000);
+  font-family: var(--app-font-family-base);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.handoff__chip-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: var(--app-font-family-base);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.handoff__chip-text span {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* -------------------------------------------------------------------
+ * Do registro ao cuidado — the professional surface. Everything under
+ * .dash uses the Inter / dashboard type scale from
+ * theme/typography-dashboard.css, a deliberate register change from
+ * the family-facing Nunito used everywhere else on the page.
+ * ------------------------------------------------------------------- */
+.care {
+  padding: clamp(6rem, 10vw, 8.5rem) var(--spacing-24);
+  background: var(--surface-page);
+}
+
+.care__inner {
+  width: min(100%, 78rem);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(var(--spacing-48), 6vw, var(--spacing-80));
+}
+
+.care__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3.6vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.care__lead {
+  max-width: 40ch;
+  margin: var(--spacing-20) 0 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.care__points {
+  margin: var(--spacing-32) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.care__points li {
+  padding-left: var(--spacing-20);
+  border-left: 2px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.care__points strong {
+  color: var(--text-primary);
+}
+
+/* --- The dashboard fragment itself --- */
+.dash {
+  width: 100%;
+  padding: var(--spacing-24);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-default);
+  box-shadow: var(--elevation-sm);
+}
+
+.dash__bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  padding-bottom: var(--spacing-16);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.dash__eyebrow {
+  margin: 0 0 var(--spacing-4);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.dash__title {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.dash__badge {
+  flex: none;
+  padding: var(--spacing-4) var(--spacing-12);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.dash__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-8) var(--spacing-12);
+  padding: var(--spacing-12) var(--spacing-4);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: background-color 500ms ease, border-color 500ms ease;
+  opacity: 0.78;
+}
+
+.dash__list .dash-row:last-child {
+  border-bottom: 0;
+}
+
+.dash-row--focus {
+  opacity: 1;
+}
+
+.dash.is-playing .dash-row--focus {
+  background: var(--surface-brand-subtle);
+  border-color: transparent;
+  border-radius: var(--radius-md);
+  padding-inline: var(--spacing-12);
+  transition-delay: 1400ms;
+}
+
+.dash-row__avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.dash-row--focus .dash-row__avatar {
+  background: var(--surface-brand-subtle);
+  color: var(--brand-1000);
+}
+
+.dash-row__name {
+  min-width: 6ch;
+  color: var(--text-primary);
+}
+
+.dash-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-8);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.dash-chip--weather {
+  background: var(--surface-muted);
+}
+
+/* Height-only, width auto — same fix as .how__step-art img: these SVGs
+   have different natural aspect ratios and a forced square distorts
+   them. */
+.dash-chip--weather img {
+  height: 0.875rem;
+  width: auto;
+}
+
+.dash-chip--muted {
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+}
+
+.dash-chip--urgent {
+  background: var(--surface-critical);
+  color: var(--text-critical);
+  font-weight: 600;
+}
+
+/* The two-step reveal inside Maria's row: comment noticed, then the
+   request to talk, then (above) the row itself gains emphasis. One
+   story, read top to bottom, playing once. */
+.dash-row__reveal {
+  opacity: 0;
+  transform: translateY(0.375rem);
+  transition: opacity 460ms ease, transform 460ms ease;
+}
+
+.dash.is-playing .dash-row__reveal[data-dash-step="1"] {
+  opacity: 1;
+  transform: none;
+  transition-delay: 300ms;
+}
+
+.dash.is-playing .dash-row__reveal[data-dash-step="2"] {
+  opacity: 1;
+  transform: none;
+  transition-delay: 900ms;
+}
+
+.dash__footnotes {
+  margin-top: var(--spacing-20);
+  padding-top: var(--spacing-16);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.dash__caption {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(0.375rem);
+  transition: opacity 460ms ease, transform 460ms ease;
+}
+
+.dash.is-playing .dash__caption {
+  opacity: 1;
+  transform: none;
+  transition-delay: 1700ms;
+}
+
+.dash__note {
+  margin: var(--spacing-8) 0 0;
+  color: var(--text-tertiary);
+}
+
+/* -------------------------------------------------------------------
+ * Humanity — the strongest statement on the page, arriving only once
+ * the product has already been explained.
+ * ------------------------------------------------------------------- */
+.humanity {
+  padding: clamp(7rem, 13vw, 10rem) var(--spacing-24);
+  background: var(--surface-default);
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.humanity__title {
+  max-width: 22ch;
+  margin: 0 auto;
+  color: var(--text-brand);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.humanity__lines {
+  margin: clamp(var(--spacing-48), 7vw, var(--spacing-64)) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.humanity__lines p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+  line-height: 1.5;
+}
+
+.humanity__final {
+  max-width: 22ch;
+  margin: clamp(var(--spacing-32), 5vw, var(--spacing-48)) auto 0;
+  color: var(--text-primary);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* Bespoke rhythm for the three "não substitui" lines and the closing
+   statement — deliberately not simultaneous (brief §13). */
+.js .humanity__lines p:nth-child(1) { transition-delay: 160ms; }
+.js .humanity__lines p:nth-child(2) { transition-delay: 380ms; }
+.js .humanity__lines p:nth-child(3) { transition-delay: 600ms; }
+.js .humanity__final { transition-delay: 900ms; }
+
+/* -------------------------------------------------------------------
+ * Cuidar também é conectar — transition into the ecosystem.
+ * ------------------------------------------------------------------- */
+.connect-intro {
+  padding: clamp(6rem, 11vw, 8.5rem) var(--spacing-24) clamp(3rem, 6vw, 4rem);
+  background: var(--surface-page);
+  text-align: center;
+}
+
+.connect-intro__title {
+  max-width: 18ch;
+  margin: 0 auto;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.connect-intro__text {
+  max-width: 40ch;
+  margin: var(--spacing-20) auto 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+/* -------------------------------------------------------------------
+ * Ecosystem — aluno, escola, família. A T-shaped relationship, not a
+ * triangle of cards: aluno and escola connect first, then família
+ * joins from above. Plays once, on scroll-in (see initEcosystem()).
+ * ------------------------------------------------------------------- */
+.ecosystem-section {
+  padding: 0 var(--spacing-24) clamp(6rem, 11vw, 8.5rem);
+  background: var(--surface-page);
+}
+
+.ecosystem {
+  width: min(100%, 52rem);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ecosystem__node {
+  width: min(100%, 22rem);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition: opacity 620ms ease, transform 620ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing .ecosystem__node {
+  opacity: 1;
+  transform: none;
+}
+
+.ecosystem__label {
+  margin: 0 0 var(--spacing-4);
+  color: var(--text-brand);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ecosystem__text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.ecosystem__line {
+  background: var(--border-default);
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing .ecosystem__line {
+  opacity: 1;
+}
+
+.ecosystem__line--vertical {
+  width: 1px;
+  height: clamp(2rem, 5vw, 3rem);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: opacity 320ms ease, transform 480ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing .ecosystem__line--vertical {
+  transform: scaleY(1);
+}
+
+.ecosystem__row {
+  width: 100%;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-24);
+}
+
+/* The connective point (brief §16): a restrained Nexus mark sitting
+   exactly where the vertical line from família meets the row, instead
+   of a plain line segment — "Nexus connects this care ecosystem"
+   stated visually rather than with a corporate diagram. */
+.ecosystem__hub {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing .ecosystem__hub {
+  opacity: 1;
+}
+
+.ecosystem__hub-line {
+  width: clamp(1.5rem, 4vw, 2.5rem);
+  height: 1px;
+  flex: none;
+  background: var(--border-default);
+  transform: scaleX(0);
+  transition: transform 480ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing .ecosystem__hub-line {
+  transform: scaleX(1);
+}
+
+.ecosystem__hub-mark {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-pill);
+  background: var(--surface-page);
+}
+
+.ecosystem__hub-mark img {
+  width: 1.125rem;
+  height: auto;
+}
+
+/* Staggered entrance: aluno first, then the horizontal line + escola,
+   then the vertical line + família, matching the brief's build-up. */
+.ecosystem[data-eco-story].is-playing [data-eco-step="1"] { transition-delay: 0ms; }
+.ecosystem[data-eco-story].is-playing [data-eco-step="2"] { transition-delay: 420ms; }
+.ecosystem[data-eco-story].is-playing [data-eco-step="3"] { transition-delay: 900ms; }
+
+.ecosystem__statement {
+  max-width: 30ch;
+  margin: clamp(var(--spacing-48), 7vw, var(--spacing-64)) auto 0;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-wrap: balance;
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition: opacity 620ms ease, transform 620ms ease;
+}
+
+.ecosystem[data-eco-story].is-playing ~ .ecosystem__statement {
+  opacity: 1;
+  transform: none;
+  transition-delay: 1300ms;
+}
+
+/* -------------------------------------------------------------------
+ * Nexus reveal — Axon app → um serviço → the official mark. Widens the
+ * frame: Axon is one service inside the broader Nexus proposal.
+ * ------------------------------------------------------------------- */
+.nexus-reveal {
+  padding: clamp(6.5rem, 12vw, 9.5rem) var(--spacing-24);
+  background: var(--surface-default);
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.nexus-reveal__lockup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-12);
+  margin-bottom: clamp(var(--spacing-40), 6vw, var(--spacing-56));
+}
+
+.nexus-reveal__line {
+  color: var(--text-primary);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 560ms ease, transform 560ms ease;
+}
+
+.nexus-reveal__line--muted {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.nexus-reveal__mark {
+  width: 2.125rem;
+  height: 1.875rem;
+  object-fit: contain;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 560ms ease, transform 560ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.nexus-reveal__lockup.is-playing [data-nx-step="0"],
+.nexus-reveal__lockup.is-playing [data-nx-step="1"] {
+  opacity: 1;
+  transform: none;
+}
+
+.nexus-reveal__lockup.is-playing [data-nx-step="1"] { transition-delay: 260ms; }
+
+.nexus-reveal__lockup.is-playing [data-nx-step="2"] {
+  opacity: 1;
+  transform: none;
+  transition-delay: 560ms;
+}
+
+.nexus-reveal__title {
+  max-width: 22ch;
+  margin: 0 auto;
+  color: var(--text-primary);
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.nexus-reveal__text {
+  max-width: 46ch;
+  margin: var(--spacing-20) auto 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.nexus-reveal__services {
+  max-width: 42ch;
+  margin: clamp(var(--spacing-32), 5vw, var(--spacing-40)) auto 0;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.nexus-reveal__services span {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------------
+ * FAQ — accessible accordion, integrated with the page's own type
+ * scale (not a bolted-on help-center widget).
+ * ------------------------------------------------------------------- */
+.faq {
+  padding: clamp(6rem, 11vw, 8.5rem) var(--spacing-24);
+  background: var(--surface-page);
+}
+
+.faq__intro {
+  width: min(100%, 42rem);
+  margin: 0 auto clamp(var(--spacing-48), 6vw, var(--spacing-64));
+  text-align: center;
+}
+
+.faq__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 3.6vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.faq__lead {
+  margin: var(--spacing-16) 0 0;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.faq__list {
+  width: min(100%, 46rem);
+  margin: 0 auto;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.faq__item {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.faq__heading {
+  margin: 0;
+}
+
+.faq__question {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20) 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: var(--app-font-family-base);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.faq__question:hover {
+  color: var(--text-brand);
+}
+
+.faq__icon {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  color: var(--text-brand);
+}
+
+.faq__icon::before,
+.faq__icon::after {
+  position: absolute;
+  content: "";
+  top: 50%;
+  left: 50%;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.faq__icon::before {
+  width: 100%;
+  height: 2px;
+  transform: translate(-50%, -50%);
+}
+
+.faq__icon::after {
+  width: 2px;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.faq__question[aria-expanded="true"] .faq__icon::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.faq__panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 320ms ease, opacity 260ms ease;
+}
+
+.faq__panel.is-open {
+  max-height: 20rem;
+  opacity: 1;
+}
+
+.faq__panel p {
+  max-width: 60ch;
+  margin: 0 0 var(--spacing-20);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+/* -------------------------------------------------------------------
+ * CTA — a calm invitation, ending in one strong official brand moment.
+ * ------------------------------------------------------------------- */
+.cta {
+  padding: clamp(6rem, 11vw, 8.5rem) var(--spacing-24);
+  background: var(--brand-700);
+  text-align: center;
+}
+
+.cta__inner {
+  width: min(100%, 40rem);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cta__title {
+  max-width: 18ch;
+  margin: 0;
+  color: var(--text-inverse);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.cta__text {
+  max-width: 36ch;
+  margin: var(--spacing-16) 0 0;
+  color: color-mix(in srgb, var(--text-inverse) 78%, transparent);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.cta__actions {
+  margin-top: clamp(var(--spacing-32), 5vw, var(--spacing-40));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-24);
+}
+
+.cta__primary {
+  min-height: 3rem;
+  padding: 0 var(--spacing-24);
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--surface-default);
+  color: var(--brand-700);
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.cta__primary:hover {
+  background: var(--surface-page);
+  transform: translateY(-1px);
+}
+
+.cta__secondary {
+  color: color-mix(in srgb, var(--text-inverse) 85%, transparent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cta__secondary:hover {
+  color: var(--text-inverse);
+}
+
+.cta__mark {
+  width: min(11rem, 60%);
+  height: auto;
+  margin-top: clamp(var(--spacing-48), 7vw, var(--spacing-64));
+  object-fit: contain;
+}
+
+/* -------------------------------------------------------------------
+ * Footer — minimal, no invented links.
+ * ------------------------------------------------------------------- */
+.site-footer {
+  padding: clamp(var(--spacing-32), 5vw, var(--spacing-48)) var(--spacing-24);
+  background: var(--surface-default);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.site-footer__inner {
+  width: min(100%, 76rem);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-24);
+}
+
+.site-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-footer__brand img {
+  width: 1.625rem;
+  height: 1.4375rem;
+}
+
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-24);
+}
+
+.site-footer__links a {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.site-footer__links a:hover {
+  color: var(--text-brand);
+}
+
+.site-footer__meta {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.8125rem;
+}
+
+/* -------------------------------------------------------------------
+ * Weather motion — landing-only container. Reuses the exact @keyframes
+ * declared in app.css (loaded before this file) so every illustration
+ * outside the device still moves exactly like it does inside it.
+ * Ghost/halo/flash decoration is intentionally not reused here — see
+ * the comment on weatherMarkup() in landing.js for why. Split layers
+ * (partly's drifting cloud, storm's independent bolt) are the actual
+ * illustration, not decoration, and stay.
+ * ------------------------------------------------------------------- */
+.weather-motion.weather--clear .weather__art {
+  animation: weather-in 320ms ease-out both, sun-calm 9s 320ms ease-in-out infinite;
+}
+.weather-motion.weather--partly .weather__art {
+  animation: weather-in 320ms ease-out both;
+}
+.weather-motion.weather--partly .weather__art--drift {
+  animation: weather-in 320ms ease-out both, cloud-sail 6.5s 320ms ease-in-out infinite;
+}
+.weather-motion.weather--cloudy .weather__art {
+  animation: weather-in 320ms ease-out both, cloud-drift 11s 320ms ease-in-out infinite;
+}
+.weather-motion.weather--rain .weather__art {
+  animation: weather-in 320ms ease-out both, rain-bob 2.8s 320ms ease-in-out infinite;
+}
+.weather-motion.weather--rain .weather__drops line {
+  animation: drop-fall 1.4s linear infinite;
+}
+.weather-motion.weather--rain .weather__drops line:nth-child(2) {
+  animation-delay: 0.45s;
+}
+.weather-motion.weather--rain .weather__drops line:nth-child(3) {
+  animation-delay: 0.9s;
+}
+.weather-motion.weather--storm .weather__art {
+  animation: weather-in 320ms ease-out both, storm-shake 4.4s 500ms ease-in-out infinite;
+}
+.weather-motion.weather--storm .weather__bolt {
+  animation:
+    weather-in 320ms ease-out both,
+    storm-shake 4.4s 500ms ease-in-out infinite,
+    storm-strike 4.4s 500ms linear infinite;
+}
+
+/* -------------------------------------------------------------------
+ * Mobile — 760px and below
+ * ------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  :root {
+    scroll-padding-top: 4.5rem;
+  }
+
+  .landing section,
+  .site-footer {
+    scroll-margin-top: 4.5rem;
+  }
+
+  .site-nav {
+    width: calc(100% - 2 * var(--spacing-20));
+    min-height: 4.5rem;
+  }
+
+  .site-nav__links {
+    display: none;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* Disclosure panel: a compact premium dropdown anchored under the
+     header, not a full-screen takeover — the header stays fixed so
+     there's no layout jump when it opens (brief §6). */
+  .mobile-nav {
+    position: fixed;
+    z-index: 19;
+    top: 4.5rem;
+    right: var(--spacing-20);
+    left: var(--spacing-20);
+    display: block;
+    padding: var(--spacing-12);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-default);
+    box-shadow: var(--elevation-sm);
+  }
+
+  .mobile-nav[hidden] {
+    display: none;
+  }
+
+  .mobile-nav a {
+    display: block;
+    padding: var(--spacing-16);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mobile-nav a:hover,
+  .mobile-nav a:focus-visible {
+    background: var(--surface-subtle);
+    color: var(--text-brand);
+  }
+
+  .hero {
+    min-height: 0;
+    padding: 6.5rem var(--spacing-20) 4.25rem;
+  }
+
+  .hero__inner {
+    display: block;
+  }
+
+  .hero__eyebrow {
+    margin-bottom: var(--spacing-16);
+  }
+
+  .hero__title {
+    max-width: none;
+  }
+
+  .hero__support {
+    max-width: 30rem;
+    font-size: 1.0625rem;
+    line-height: 1.55;
+  }
+
+  .hero__actions {
+    margin-top: var(--spacing-24);
+  }
+
+  /* Mobile is intentionally text-led: the atmospheric visual is a
+     desktop/tablet-only flourish (brief: "remove the Hero atmospheric
+     visual entirely from mobile ... it must take ZERO layout space").
+     `display: none` rather than merely hiding it visually, so the grid
+     item disappears from layout entirely instead of leaving a reserved
+     box. The desktop `.hero-sky*` rules above are untouched. */
+  .hero-sky {
+    display: none;
+  }
+
+  .hero__scroll {
+    bottom: var(--spacing-12);
+  }
+
+  .why {
+    padding-inline: var(--spacing-20);
+  }
+
+  .why__lead {
+    max-width: 36ch;
+  }
+
+  .how {
+    padding-inline: var(--spacing-20);
+  }
+
+  .how [data-how-desktop] {
+    display: none;
+  }
+
+  .how__accordion {
+    display: block;
+  }
+
+  .question {
+    padding-inline: var(--spacing-20);
+  }
+
+  .question__title {
+    max-width: 9ch;
+  }
+
+  /* Mobile keeps the five real buttons — no dropdown — but arranges
+     them intentionally (three, then two, centered) with the selected
+     illustration held large above (brief §2), instead of shrinking the
+     desktop grid or squeezing five tiles into one cramped row. */
+  .weather-showcase__stage {
+    display: flex;
+  }
+
+  .weather-showcase__list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-16);
+  }
+
+  .weather-showcase__list::before {
+    display: none;
+  }
+
+  .weather-showcase__item {
+    flex: 0 0 5.75rem;
+  }
+
+  .weather-showcase__button {
+    min-height: 44px;
+    padding: var(--spacing-16) var(--spacing-8);
+  }
+
+  .demo {
+    padding-inline: var(--spacing-20);
+  }
+
+  .demo__inner {
+    /* minmax(0, 1fr), not a plain 1fr: grid items default to
+       min-width:auto, which lets intrinsic content (the device, fixed
+       at 360px before JS scales it down) push this track wider than
+       the actual available space — the container measurement
+       initAxonScale() depends on would then read that inflated width
+       back, undercorrecting the scale. */
+    grid-template-columns: minmax(0, 1fr);
+    /* Not justify-items: center — that would let the grid item
+       shrink-to-fit its content instead of stretching to the track,
+       which is exactly the trap that made the device-scale
+       measurement circular (see the comment above). .demo__text
+       already centers itself via margin-inline: auto below, and
+       .axon-demo-stage centers the device via its own flexbox, so
+       nothing here actually depended on it. */
+    text-align: center;
+  }
+
+  .demo__text {
+    margin-inline: auto;
+  }
+
+  .demo__note {
+    justify-content: center;
+  }
+
+  .axon-demo-stage {
+    width: 100%;
+    padding: var(--spacing-24) var(--spacing-16) var(--spacing-32);
+  }
+
+  .handoff,
+  .humanity {
+    padding-inline: var(--spacing-20);
+  }
+
+  .handoff__title {
+    max-width: 18ch;
+  }
+
+  .care {
+    padding-inline: var(--spacing-20);
+  }
+
+  .care__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .care__lead,
+  .care__points {
+    max-width: none;
+  }
+
+  .dash {
+    padding: var(--spacing-16);
+  }
+
+  .dash-row {
+    padding-block: var(--spacing-8);
+  }
+
+  .humanity__title {
+    max-width: 16ch;
+  }
+
+  .humanity__final {
+    max-width: 16ch;
+  }
+
+  .connect-intro {
+    padding-inline: var(--spacing-20);
+  }
+
+  .connect-intro__title {
+    max-width: 14ch;
+  }
+
+  .ecosystem-section {
+    padding-inline: var(--spacing-20);
+  }
+
+  /* Reorganized vertically per brief §26: família, aluno and escola
+     stack in one column with straight connectors, no crossed lines —
+     the hub rotates with them instead of staying a horizontal seam. */
+  .ecosystem__row {
+    flex-direction: column;
+    gap: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .ecosystem__hub {
+    flex-direction: column;
+  }
+
+  .ecosystem__hub-line {
+    width: 1px;
+    height: clamp(1.25rem, 4vw, 1.75rem);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .ecosystem[data-eco-story].is-playing .ecosystem__hub-line {
+    transform: scaleY(1);
+  }
+
+  .ecosystem__statement {
+    max-width: 22ch;
+  }
+
+  .nexus-reveal {
+    padding-inline: var(--spacing-20);
+  }
+
+  .nexus-reveal__lockup {
+    flex-wrap: wrap;
+  }
+
+  .faq {
+    padding-inline: var(--spacing-20);
+  }
+
+  .faq__question {
+    font-size: 1rem;
+  }
+
+  .cta {
+    padding-inline: var(--spacing-20);
+  }
+
+  .site-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 374px) {
+  .hero {
+    padding-inline: var(--spacing-16);
+  }
+
+  .hero__title {
+    font-size: 2.65rem;
+  }
+
+  .hero__support {
+    font-size: 1rem;
+  }
+
+  .why,
+  .how,
+  .question,
+  .demo,
+  .handoff,
+  .care,
+  .humanity,
+  .connect-intro,
+  .ecosystem-section,
+  .nexus-reveal,
+  .faq,
+  .cta {
+    padding-inline: var(--spacing-16);
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero__inner,
+  .site-nav,
+  .how__intro {
+    width: min(100% - 2 * var(--spacing-48), 82rem);
+  }
+}
+
+/* -------------------------------------------------------------------
+ * Reduced motion
+ * ------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    scroll-behavior: auto;
+  }
+
+  .landing *,
+  .landing *::before,
+  .landing *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .js [data-hero-item],
+  .js [data-reveal-group] [data-reveal-item],
+  .js .how__step {
+    opacity: 1;
+    transform: none;
+  }
+
+  .how__step.is-active .how__num {
+    border-color: var(--border-brand);
+    background: var(--surface-brand);
+    color: var(--text-inverse);
+  }
+
+  .handoff__flow-tag,
+  .handoff__flow-line {
+    opacity: 1;
+    transform: none;
+  }
+
+  .dash-row__reveal,
+  .dash__caption {
+    opacity: 1;
+    transform: none;
+  }
+
+  .dash-row--focus {
+    background: var(--surface-brand-subtle);
+    border-color: transparent;
+    border-radius: var(--radius-md);
+    padding-inline: var(--spacing-12);
+  }
+
+  .ecosystem__node,
+  .ecosystem__line,
+  .ecosystem__statement {
+    opacity: 1;
+    transform: none;
+  }
+
+  .nexus-reveal__line,
+  .nexus-reveal__mark {
+    opacity: 1;
+    transform: none;
+  }
+
+  .faq__panel.is-open {
+    max-height: none;
+  }
+}

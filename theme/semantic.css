@@ -1,0 +1,48 @@
+:root {
+  --surface-page: var(--neutral-25);
+  --surface-default: var(--neutral-0);
+  --surface-subtle: var(--brand-50);
+  --surface-muted: var(--neutral-100);
+  --surface-disabled: var(--neutral-100);
+  --surface-brand: var(--brand-500);
+  --surface-brand-hover: var(--brand-600);
+  --surface-brand-active: var(--brand-700);
+  --surface-brand-subtle: var(--brand-100);
+  --surface-critical: var(--red-50);
+  --surface-critical-strong: var(--red-100);
+
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary: var(--neutral-500);
+  --text-brand: var(--brand-600);
+  --text-inverse: var(--neutral-0);
+  --text-disabled: var(--neutral-500);
+  --text-critical: var(--red-700);
+
+  --border-default: var(--neutral-300);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-500);
+  --border-brand: var(--brand-500);
+  --border-critical: var(--red-500);
+  --border-focus-ring: var(--brand-700);
+
+  --space-inline-sm: var(--spacing-8);
+  --space-inline-md: var(--spacing-12);
+  --space-inline-lg: var(--spacing-16);
+  --space-inset-xs: var(--spacing-4);
+  --space-inset-sm: var(--spacing-8);
+  --space-inset-md: var(--spacing-16);
+  --space-inset-lg: var(--spacing-24);
+  --space-inset-xl: var(--spacing-32);
+  --space-stack-xs: var(--spacing-4);
+  --space-stack-sm: var(--spacing-8);
+  --space-stack-md: var(--spacing-16);
+  --space-stack-lg: var(--spacing-24);
+  --space-stack-xl: var(--spacing-32);
+  --space-section: var(--spacing-32);
+  --space-screen-margin: var(--spacing-16);
+
+  --icon-size-sm: 1rem;
+  --icon-size-md: 1.5rem;
+  --elevation-sm: 0 12px 36px rgb(30 33 32 / 10%);
+}

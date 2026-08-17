@@ -1,0 +1,5 @@
+<!-- Camada de partly.svg: só o sol. Mesmo viewBox do original de
+     propósito — as duas camadas se sobrepõem com o mesmo inset. -->
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="22" height="17" viewBox="0 0 22 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle id="Ellipse 2" cx="15" cy="7" r="7" fill="#E9C56D"/>
+</svg>

@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fcfcfa" id="meta-theme-color" />
+    <meta
+      name="description"
+      content="Axon é um serviço Nexus para o acompanhamento emocional no ambiente escolar: um check-in simples, “Como está seu céu hoje?”, que dá mais contexto para o cuidado humano."
+    />
+    <title>Axon | Nexus Como está seu céu hoje?</title>
+    <script>
+      /* Runs synchronously, before any stylesheet paints, so the
+         correct theme is already on <html> for the very first frame
+         no flash of the wrong theme (brief §24). Kept tiny and
+         dependency-free on purpose; the rest of the theme system
+         (toggle, persistence, live system-preference updates) lives in
+         scripts/landing.js. */
+      (function () {
+        try {
+          var stored = localStorage.getItem("axon-theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="theme/primitives.css" />
+    <link rel="stylesheet" href="theme/semantic.css" />
+    <link rel="stylesheet" href="theme/typography-app.css" />
+    <link rel="stylesheet" href="theme/typography-dashboard.css" />
+    <link rel="stylesheet" href="theme/illustration.css" />
+    <link rel="stylesheet" href="styles/app.css" />
+    <link rel="stylesheet" href="styles/landing.css" />
+    <script src="scripts/landing.js" defer></script>
+    <script src="scripts/app.js" defer></script>
+  </head>
+  <body class="landing" id="inicio">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header" data-site-header>
+      <nav class="site-nav" aria-label="Navegação principal">
+        <a class="site-brand" href="#inicio" aria-label="Nexus início">
+          <img class="theme-logo theme-logo--light" src="assets/nexus/Logo_Colorida.svg" alt="" width="34" height="30" />
+          <img class="theme-logo theme-logo--dark" src="assets/nexus/Logo_Branca.svg" alt="" width="34" height="30" />
+          <span>Nexus</span>
+        </a>
+
+        <div class="site-nav__links" data-nav-links>
+          <a href="#inicio" data-nav-targets="hero,pergunta,por-que-existe">O Axon</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#experimente">Experimente</a>
+          <a href="#do-registro-ao-cuidado">Cuidado</a>
+          <a href="#nexus">Nexus</a>
+        </div>
+
+        <div class="site-nav__controls">
+          <button
+            type="button"
+            class="theme-toggle"
+            data-theme-toggle
+            aria-label="Alternar para tema escuro"
+          >
+            <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="3.5" />
+              <path d="M10 2v2M10 16v2M18 10h-2M4 10H2M15.5 4.5 14 6M6 14l-1.5 1.5M15.5 15.5 14 14M6 6 4.5 4.5" />
+            </svg>
+            <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M17 11.5A7 7 0 1 1 8.5 3a5.5 5.5 0 0 0 8.5 8.5Z" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="nav-toggle"
+            data-nav-toggle
+            aria-expanded="false"
+            aria-controls="mobile-nav-panel"
+            aria-label="Abrir menu"
+          >
+            <span class="nav-toggle__bar"></span>
+            <span class="nav-toggle__bar"></span>
+          </button>
+        </div>
+      </nav>
+
+      <div class="mobile-nav" id="mobile-nav-panel" data-mobile-nav hidden>
+        <a href="#inicio">O Axon</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#experimente">Experimente</a>
+        <a href="#do-registro-ao-cuidado">Cuidado</a>
+        <a href="#nexus">Nexus</a>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <!-- ================================================================
+           HERO explanatory, not abstract. Establishes what Axon is,
+           who makes it and what it revolves around within the first
+           screen (brief §4 e §6).
+           ================================================================ -->
+      <section class="hero" id="hero" aria-labelledby="hero-title">
+        <div class="hero__inner">
+          <div class="hero__copy">
+            <p class="hero__eyebrow" data-hero-item>Axon App · um serviço Nexus</p>
+            <h1 class="hero__title" id="hero-title" data-hero-item>
+              Um novo jeito de acompanhar como os alunos estão.
+            </h1>
+            <p class="hero__support" data-hero-item>
+              Por meio de check-ins simples e acolhedores, o Axon cria um espaço para o aluno registrar
+              como está se sentindo, compartilhar algo quando quiser e pedir para conversar quando
+              precisar.
+            </p>
+            <div class="hero__actions" data-hero-item>
+              <a class="hero__cta" href="#como-funciona">
+                <span>Veja como funciona</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M10 3v13m0 0 5-5m-5 5-5-5" />
+                </svg>
+              </a>
+              <a class="hero__cta hero__cta--secondary" href="#por-que-existe">Conheça o Axon</a>
+            </div>
+          </div>
+
+          <!-- A minimal emotional skyscape — built from the same
+               authentic weather SVGs used throughout the product (not
+               a card, not a phone, not five icons at once). One sun,
+               one primary cloud, one lighter background cloud, and two
+               rare, soft events (a breath of rain, a distant flash)
+               coexisting as facets of a single living sky rather than
+               five discrete, cycling poses. Purely decorative — the
+               copy carries the meaning. -->
+          <div class="hero-sky" data-hero-item aria-hidden="true">
+            <span class="hero-sky__haze"></span>
+            <span class="hero-sky__flash"></span>
+            <img class="hero-sky__cloud hero-sky__cloud--back" src="assets/weather/partly-cloud.svg" alt="" />
+            <span class="hero-sky__halo"></span>
+            <img class="hero-sky__sun" src="assets/weather/clear.svg" alt="" />
+            <img class="hero-sky__cloud hero-sky__cloud--front" src="assets/weather/cloudy.svg" alt="" />
+            <svg class="hero-sky__rain" viewBox="0 0 32 32" fill="none">
+              <g stroke="var(--weather-cloud-rain)" stroke-width="1.6" stroke-linecap="round">
+                <line x1="11.9" y1="18" x2="9.2" y2="24.6" />
+                <line x1="16.7" y1="18" x2="14.4" y2="22.8" />
+                <line x1="21.8" y1="18" x2="19.1" y2="24.6" />
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <a class="hero__scroll" href="#pergunta" aria-label="Continuar para a história" data-hero-item>
+          <span></span>
+        </a>
+      </section>
+
+      <!-- ================================================================
+           A PERGUNTA CENTRAL + OS CINCO ESTADOS moved directly after
+           the Hero: the weather metaphor is Axon's unique product
+           language, so it should land right after "what is Axon", not
+           several sections later.
+           ================================================================ -->
+      <section class="question" id="pergunta" aria-labelledby="question-title" data-reveal-group>
+        <p class="question__lead" data-reveal-item>Tudo começa com uma pergunta simples.</p>
+        <h2 class="question__title" id="question-title" data-reveal-item>Como está seu céu hoje?</h2>
+
+        <div class="weather-showcase" data-reveal-item>
+          <!-- Mobile only: the selected illustration held large and
+               centered above the five real buttons (brief §2 no
+               dropdown; the five states are Axon's identity and must
+               stay directly visible and tappable). -->
+          <div class="weather-showcase__stage" data-weather-mobile aria-hidden="true">
+            <span class="weather-showcase__stage-art" data-weather-art="cloudy" data-weather-lg></span>
+            <p class="weather-showcase__stage-label" data-weather-mobile-label>Nublado</p>
+          </div>
+
+          <ul class="weather-showcase__list">
+            <li class="weather-showcase__item">
+              <button type="button" class="weather-showcase__button" data-weather-select="storm" aria-pressed="false">
+                <span class="weather-showcase__art" data-weather-art="storm"></span>
+                <span class="weather-showcase__label">Tempestade</span>
+              </button>
+            </li>
+            <li class="weather-showcase__item">
+              <button type="button" class="weather-showcase__button" data-weather-select="rain" aria-pressed="false">
+                <span class="weather-showcase__art" data-weather-art="rain"></span>
+                <span class="weather-showcase__label">Chuva</span>
+              </button>
+            </li>
+            <li class="weather-showcase__item is-active">
+              <button type="button" class="weather-showcase__button" data-weather-select="cloudy" aria-pressed="true">
+                <span class="weather-showcase__art" data-weather-art="cloudy"></span>
+                <span class="weather-showcase__label">Nublado</span>
+              </button>
+            </li>
+            <li class="weather-showcase__item">
+              <button type="button" class="weather-showcase__button" data-weather-select="partly" aria-pressed="false">
+                <span class="weather-showcase__art" data-weather-art="partly"></span>
+                <span class="weather-showcase__label">Sol entre nuvens</span>
+              </button>
+            </li>
+            <li class="weather-showcase__item">
+              <button type="button" class="weather-showcase__button" data-weather-select="clear" aria-pressed="false">
+                <span class="weather-showcase__art" data-weather-art="clear"></span>
+                <span class="weather-showcase__label">Céu limpo</span>
+              </button>
+            </li>
+          </ul>
+
+          <p class="weather-showcase__hint">
+            O aluno não está escolhendo “bom” ou “ruim” só o que combina com este momento.
+          </p>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           POR QUE O AXON EXISTE
+           ================================================================ -->
+      <section class="why" id="por-que-existe" aria-labelledby="why-title" data-reveal-group>
+        <div class="why__inner">
+          <div class="why__copy">
+            <h2 class="why__title" id="why-title" data-reveal-item>Por que o Axon existe?</h2>
+            <p class="why__lead" data-reveal-item>
+              Na rotina escolar, nem sempre é fácil para um aluno explicar espontaneamente como está se
+              sentindo. O Axon cria um ponto de contato simples e recorrente, ajudando a transformar
+              pequenos registros do dia a dia em mais contexto para o acompanhamento profissional.
+            </p>
+            <p class="why__resolution" data-reveal-item>
+              Não para substituir uma conversa.<br />
+              Para ajudar a criar espaço para ela acontecer.
+            </p>
+          </div>
+
+          <div class="why__flow" aria-hidden="true" data-reveal-item>
+            <div class="why__flow-step">
+              <span class="why__flow-label">Rotina do aluno</span>
+            </div>
+            <span class="why__flow-line"></span>
+            <div class="why__flow-step">
+              <span class="why__flow-label">Check-in</span>
+            </div>
+            <span class="why__flow-line"></span>
+            <div class="why__flow-step">
+              <span class="why__flow-label">Mais contexto</span>
+            </div>
+            <span class="why__flow-line"></span>
+            <div class="why__flow-step why__flow-step--final">
+              <span class="why__flow-label">Cuidado humano</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           COMO FUNCIONA a connected journey, not four feature cards.
+           ================================================================ -->
+      <section class="how" id="como-funciona" aria-labelledby="how-title">
+        <div class="how__intro">
+          <h2 class="how__title" id="how-title">Como funciona?</h2>
+        </div>
+
+        <ol class="how__rail" data-how-desktop>
+          <li class="how__step" data-how-step="1">
+            <span class="how__num" aria-hidden="true">01</span>
+            <h3 class="how__step-title">O aluno faz um check-in</h3>
+            <p class="how__step-text">
+              Em poucos instantes, responde à pergunta “Como está seu céu hoje?” escolhendo o estado que
+              mais combina com aquele momento.
+            </p>
+            <div class="how__step-art" aria-hidden="true">
+              <img src="assets/weather/storm.svg" alt="" />
+              <img src="assets/weather/rain-cloud.svg" alt="" />
+              <img src="assets/weather/cloudy.svg" alt="" />
+              <img src="assets/weather/partly.svg" alt="" />
+              <img src="assets/weather/clear.svg" alt="" />
+            </div>
+          </li>
+
+          <li class="how__step" data-how-step="2">
+            <span class="how__num" aria-hidden="true">02</span>
+            <h3 class="how__step-title">Se quiser, pode contar um pouco mais</h3>
+            <p class="how__step-text">
+              Depois do registro, o aluno pode compartilhar algo que aconteceu usando suas próprias
+              palavras.
+            </p>
+            <div class="how__step-art" aria-hidden="true">
+              <span class="how__step-badge">Comentário opcional</span>
+            </div>
+          </li>
+
+          <li class="how__step" data-how-step="3">
+            <span class="how__num" aria-hidden="true">03</span>
+            <h3 class="how__step-title">Quando precisar, pode pedir para conversar</h3>
+            <p class="how__step-text">
+              A opção “Preciso conversar agora” cria um caminho direto para sinalizar ao profissional
+              responsável que o aluno deseja conversar.
+            </p>
+            <div class="how__step-art" aria-hidden="true">
+              <span class="how__step-mock">Preciso conversar agora</span>
+            </div>
+          </li>
+
+          <li class="how__step" data-how-step="4">
+            <span class="how__num" aria-hidden="true">04</span>
+            <h3 class="how__step-title">O profissional ganha mais contexto para acompanhar</h3>
+            <p class="how__step-text">
+              Os registros ajudam a organizar o acompanhamento e a direcionar a atenção do psicólogo
+              escolar, sempre dentro de uma estrutura de cuidado humano.
+            </p>
+            <div class="how__step-art" aria-hidden="true">
+              <span class="how__step-badge">Contexto, não diagnóstico</span>
+            </div>
+          </li>
+        </ol>
+
+        <!-- Mobile: an accordion, one step open at a time not a
+             long sticky sequence (brief §10). -->
+        <div class="how__accordion" data-how-mobile>
+          <div class="how__accordion-item">
+            <h3>
+              <button
+                type="button"
+                class="how__accordion-trigger"
+                aria-expanded="true"
+                aria-controls="how-panel-1"
+                id="how-trigger-1"
+              >
+                <span class="how__accordion-num">01</span>
+                <span>O aluno faz um check-in</span>
+              </button>
+            </h3>
+            <div class="how__accordion-panel" id="how-panel-1" aria-labelledby="how-trigger-1">
+              <p>
+                Em poucos instantes, responde à pergunta “Como está seu céu hoje?” escolhendo o estado
+                que mais combina com aquele momento.
+              </p>
+              <div class="how__step-art" aria-hidden="true">
+                <img src="assets/weather/storm.svg" alt="" />
+                <img src="assets/weather/rain-cloud.svg" alt="" />
+                <img src="assets/weather/cloudy.svg" alt="" />
+                <img src="assets/weather/partly.svg" alt="" />
+                <img src="assets/weather/clear.svg" alt="" />
+              </div>
+            </div>
+          </div>
+
+          <div class="how__accordion-item">
+            <h3>
+              <button
+                type="button"
+                class="how__accordion-trigger"
+                aria-expanded="false"
+                aria-controls="how-panel-2"
+                id="how-trigger-2"
+              >
+                <span class="how__accordion-num">02</span>
+                <span>Se quiser, pode contar um pouco mais</span>
+              </button>
+            </h3>
+            <div class="how__accordion-panel" id="how-panel-2" aria-labelledby="how-trigger-2" hidden>
+              <p>
+                Depois do registro, o aluno pode compartilhar algo que aconteceu usando suas próprias
+                palavras.
+              </p>
+              <div class="how__step-art" aria-hidden="true">
+                <span class="how__step-badge">Comentário opcional</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="how__accordion-item">
+            <h3>
+              <button
+                type="button"
+                class="how__accordion-trigger"
+                aria-expanded="false"
+                aria-controls="how-panel-3"
+                id="how-trigger-3"
+              >
+                <span class="how__accordion-num">03</span>
+                <span>Quando precisar, pode pedir para conversar</span>
+              </button>
+            </h3>
+            <div class="how__accordion-panel" id="how-panel-3" aria-labelledby="how-trigger-3" hidden>
+              <p>
+                A opção “Preciso conversar agora” cria um caminho direto para sinalizar ao profissional
+                responsável que o aluno deseja conversar.
+              </p>
+              <div class="how__step-art" aria-hidden="true">
+                <span class="how__step-mock">Preciso conversar agora</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="how__accordion-item">
+            <h3>
+              <button
+                type="button"
+                class="how__accordion-trigger"
+                aria-expanded="false"
+                aria-controls="how-panel-4"
+                id="how-trigger-4"
+              >
+                <span class="how__accordion-num">04</span>
+                <span>O profissional ganha mais contexto para acompanhar</span>
+              </button>
+            </h3>
+            <div class="how__accordion-panel" id="how-panel-4" aria-labelledby="how-trigger-4" hidden>
+              <p>
+                Os registros ajudam a organizar o acompanhamento e a direcionar a atenção do psicólogo
+                escolar, sempre dentro de uma estrutura de cuidado humano.
+              </p>
+              <div class="how__step-art" aria-hidden="true">
+                <span class="how__step-badge">Contexto, não diagnóstico</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           EXPERIMENTE O AXON the real, functional student prototype.
+           ================================================================ -->
+      <section class="demo" id="experimente" aria-labelledby="demo-title" data-reveal-group>
+        <div class="demo__inner">
+          <div class="demo__copy" data-reveal-item>
+            <h2 class="demo__title" id="demo-title">Experimente o Axon</h2>
+            <p class="demo__text">
+              Este é o mesmo fluxo que o aluno encontra no aplicativo. Escolha um clima e veja como um
+              check-in acontece.
+            </p>
+            <p class="demo__note">Protótipo funcional, com dados fictícios de demonstração.</p>
+          </div>
+
+          <div class="demo__stage" data-reveal-item>
+            <div class="axon-demo-stage">
+              <!-- Reserves the device's actual scaled footprint (see
+                   initAxonScale() in landing.js) so a uniform
+                   transform: scale() never leaves an invisible
+                   360×812 gap in the layout. Width and height here are
+                   always in the device's native 360:812 ratio never
+                   scaled independently on each axis. -->
+              <div class="axon-demo-viewport" data-axon-viewport>
+                <div class="device">
+                <div class="app">
+                  <p class="visually-hidden" role="status" aria-live="polite" id="live"></p>
+
+                  <section class="screen" data-screen="inicio" data-active>
+                    <div class="screen__body">
+                      <div class="app-bar">
+                        <div class="app-bar__identity">
+                          <span class="avatar app-heading-2" aria-hidden="true">M</span>
+                          <div class="app-bar__greeting">
+                            <span class="app-heading-2">Olá, Maria</span>
+                            <span class="app-bar__date app-body-sm" id="today">Domingo, 16 de agosto</span>
+                          </div>
+                        </div>
+                        <button type="button" class="btn" data-action="notifications" aria-label="Notificações">
+                          <span class="icon icon--md icon--bell" aria-hidden="true"></span>
+                        </button>
+                      </div>
+
+                      <div class="view" data-view="picker">
+                        <div class="checkin">
+                          <div class="checkin__main">
+                            <div class="checkin__intro">
+                              <h2 class="checkin__title app-heading-1">Como está seu céu hoje?</h2>
+                              <p class="checkin__subtitle app-body-md">
+                                Escolha o estado que mais combina com este momento.
+                              </p>
+                            </div>
+
+                            <div class="checkin__picker">
+                              <div class="checkin__state">
+                                <div class="checkin__card" data-sky="cloudy">
+                                  <span class="checkin__sky" aria-hidden="true"></span>
+                                  <span class="checkin__shine" aria-hidden="true"></span>
+                                  <span data-weather-slot="current" data-size="lg"></span>
+                                </div>
+                                <p class="checkin__label app-label-sm" id="weather-label"></p>
+                              </div>
+
+                              <div class="checkin__control">
+                                <div class="weather-row" id="weather-row"></div>
+
+                                <div class="slider">
+                                  <div
+                                    class="slider__touch"
+                                    id="slider"
+                                    role="slider"
+                                    tabindex="0"
+                                    aria-label="Escolha o clima do seu dia"
+                                    aria-valuemin="1"
+                                    aria-valuemax="5"
+                                    aria-valuenow="3"
+                                    aria-valuetext="Nublado"
+                                  >
+                                    <span class="slider__track">
+                                      <span class="slider__fill" id="slider-fill"></span>
+                                    </span>
+                                    <span class="slider__knob" id="slider-knob"></span>
+                                  </div>
+                                  <div class="slider__steps" aria-hidden="true">
+                                    <span class="slider__step"></span>
+                                    <span class="slider__step"></span>
+                                    <span class="slider__step"></span>
+                                    <span class="slider__step"></span>
+                                    <span class="slider__step"></span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="checkin__actions">
+                            <button type="button" class="btn btn--primary btn--block" data-action="register">
+                              Registrar meu dia
+                            </button>
+                            <button type="button" class="btn btn--critical btn--block" data-action="sos">
+                              Preciso conversar agora
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="view view--comment" data-view="comment" hidden>
+                        <div class="comment__bar">
+                          <button type="button" class="btn btn--tertiary" data-action="comment-skip">Pular</button>
+                        </div>
+
+                        <div class="comment__field">
+                          <div class="comment__text">
+                            <h2 class="comment__title app-heading-2">Quer contar um pouco mais?</h2>
+                            <p class="comment__hint app-body-sm">
+                              Isso é só se você quiser. Você também pode pular sem problema.
+                            </p>
+                          </div>
+
+                          <div class="comment__input">
+                            <textarea
+                              class="textarea"
+                              id="comment-input"
+                              aria-label="Comentário sobre o dia"
+                              placeholder="Escreva o que quiser aqui..."
+                            ></textarea>
+                            <p class="comment__status app-body-sm" id="comment-status">
+                              Escreva algo para habilitar o envio.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div class="comment__submit">
+                          <button type="button" class="btn btn--primary btn--block" id="comment-send" data-action="comment-send" disabled>
+                            Enviar
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="view done" data-view="done" hidden>
+                        <div class="done__content">
+                          <div class="done__state">
+                            <div class="done__stage">
+                              <span class="done__sky" aria-hidden="true"></span>
+                              <span class="done__glow" aria-hidden="true"></span>
+                              <span class="done__shine" aria-hidden="true"></span>
+                              <div class="done__card">
+                                <span class="done__orbit">
+                                  <span data-weather-slot="done" data-size="lg"></span>
+                                </span>
+                                <div class="done__escape" id="done-escape"></div>
+                              </div>
+                            </div>
+                            <p class="done__label" id="done-label"></p>
+                          </div>
+
+                          <div class="done__text">
+                            <p>Registro guardado com carinho.</p>
+                            <p id="done-streak"></p>
+                          </div>
+
+                          <div class="done__actions">
+                            <button type="button" class="btn btn--primary btn--block" data-action="home">
+                              Retornar para o início
+                            </button>
+                            <button type="button" class="btn btn--secondary btn--block" data-action="redo">
+                              Mudar meu registro
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="screen" data-screen="historico">
+                    <div class="screen__body">
+                      <div class="vault" data-vault="lock">
+                        <div class="vault__intro">
+                          <span class="vault__badge">
+                            <span class="icon icon--md icon--lock" aria-hidden="true"></span>
+                          </span>
+                          <h2 class="vault__title app-heading-2">Histórico protegido</h2>
+                          <p class="vault__hint app-body-sm">Digite os 4 números para ver os registros.</p>
+                        </div>
+
+                        <div class="vault__entry">
+                          <div class="vault__dots" id="pin-dots">
+                            <span class="pin-dot"></span>
+                            <span class="pin-dot"></span>
+                            <span class="pin-dot"></span>
+                            <span class="pin-dot"></span>
+                          </div>
+                          <p class="vault__status" id="pin-status"></p>
+                        </div>
+
+                        <div class="keypad" id="keypad"></div>
+
+                        <button type="button" class="btn btn--tertiary" data-action="pin-forgot">
+                          Esqueci minha senha
+                        </button>
+                      </div>
+
+                      <div class="vault vault--open" data-vault="list" hidden>
+                        <h2 class="section-title app-heading-2">Seus registros</h2>
+                        <ul class="history" id="history-list"></ul>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="screen" data-screen="perfil">
+                    <div class="screen__body">
+                      <div class="profile">
+                        <div class="profile__head">
+                          <span class="avatar app-heading-2" aria-hidden="true">M</span>
+                          <div>
+                            <p class="app-heading-2">Maria Souza</p>
+                            <p class="app-body-sm">9º ano · Turma B</p>
+                          </div>
+                        </div>
+
+                        <div class="profile__rows">
+                          <div class="profile__row">
+                            <span class="app-body-md">Psicóloga responsável</span>
+                            <span class="app-body-md">Ana Ribeiro</span>
+                          </div>
+                          <div class="profile__row">
+                            <span class="app-body-md">Próximo encontro</span>
+                            <span class="app-body-md">Quinta, 20 de agosto</span>
+                          </div>
+                          <div class="profile__row">
+                            <span class="app-body-md">Sequência de registros</span>
+                            <span class="app-body-md" id="streak">4 dias</span>
+                          </div>
+                        </div>
+
+                        <button type="button" class="btn btn--critical btn--block" data-action="sos">
+                          Preciso conversar agora
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <nav class="tab-bar" aria-label="Navegação do aplicativo">
+                    <button type="button" class="tab-item" data-tab="inicio" aria-current="page">
+                      <span class="icon icon--house" aria-hidden="true"></span>
+                      <span class="app-label-sm">Início</span>
+                    </button>
+                    <button type="button" class="tab-item" data-tab="historico">
+                      <span class="icon icon--clock" aria-hidden="true"></span>
+                      <span class="app-label-sm">Histórico</span>
+                    </button>
+                    <button type="button" class="tab-item" data-tab="perfil">
+                      <span class="icon icon--user" aria-hidden="true"></span>
+                      <span class="app-label-sm">Perfil</span>
+                    </button>
+                  </nav>
+                </div>
+
+                <div class="sheet" id="sos" role="dialog" aria-modal="true" aria-labelledby="sos-title">
+                  <div class="sheet__panel">
+                    <div class="sheet__text">
+                      <h2 class="sheet__title app-heading-2" id="sos-title">Preciso conversar agora</h2>
+                      <p class="sheet__body app-body-sm">
+                        Isso avisa a Ana, sua psicóloga, que você quer conversar.
+                      </p>
+                    </div>
+
+                    <div class="sheet__field">
+                      <label class="sheet__label app-label-sm" for="sos-input">O que você quer contar?</label>
+                      <textarea
+                        class="textarea"
+                        id="sos-input"
+                        placeholder="Escreva aqui o que está acontecendo..."
+                      ></textarea>
+                      <p class="sheet__status app-body-sm" id="sos-status">
+                        Escreva algo para habilitar o envio.
+                      </p>
+                    </div>
+
+                    <div class="sheet__actions">
+                      <button type="button" class="btn btn--primary btn--block" id="sos-send" data-action="sos-confirm" disabled>
+                        Enviar
+                      </button>
+                      <button type="button" class="btn btn--tertiary btn--block" data-action="sos-close">Voltar</button>
+                    </div>
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           E O QUE ACONTECE DEPOIS one explanatory transformation, not
+           a notification chip floating alone followed by a duplicate of
+           itself (brief §13): the same registration is labeled through
+           three stages registro, contexto, visão do profissional
+           the last one already speaking the dashboard's own Inter type
+           scale, foreshadowing the hand-off that follows.
+           ================================================================ -->
+      <section class="handoff" id="depois" aria-labelledby="handoff-title" data-reveal-group>
+        <p class="handoff__eyebrow" data-reveal-item>Depois do check-in</p>
+        <h2 class="handoff__title" id="handoff-title" data-reveal-item>
+          E o que acontece depois que ele responde?
+        </h2>
+        <p class="handoff__text" data-reveal-item>
+          O registro do aluno não fica isolado no aplicativo. Ele pode acrescentar contexto ao
+          acompanhamento feito pelo profissional responsável.
+        </p>
+
+        <div class="handoff__flow" data-handoff-story>
+          <p class="handoff__flow-tag" data-handoff-step="0">Registro do aluno</p>
+
+          <div class="handoff__chip" aria-hidden="true">
+            <span class="handoff__chip-avatar">M</span>
+            <span class="handoff__chip-text">
+              <strong>Maria</strong>
+              <span>Hoje · Chuva</span>
+            </span>
+          </div>
+
+          <span class="handoff__flow-line" data-handoff-step="1" aria-hidden="true"></span>
+          <p class="handoff__flow-tag" data-handoff-step="1">Contexto</p>
+
+          <span class="handoff__flow-line" data-handoff-step="2" aria-hidden="true"></span>
+          <p class="handoff__flow-tag handoff__flow-tag--dash dash-label-sm" data-handoff-step="2">
+            Visão do profissional
+          </p>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           DO REGISTRO AO CUIDADO the professional surface. Inter,
+           not Nunito, from here on: a deliberate typographic hand-off
+           from family language to the professional dashboard.
+           ================================================================ -->
+      <section class="care" id="do-registro-ao-cuidado" aria-labelledby="care-title" data-reveal-group>
+        <div class="care__inner">
+          <div class="care__copy" data-reveal-item>
+            <h2 class="care__title" id="care-title">Do registro ao cuidado</h2>
+            <p class="care__lead">
+              Cada check-in pode acrescentar contexto ao acompanhamento realizado pelo profissional
+              responsável.
+            </p>
+            <p class="care__lead">
+              Em vez de depender apenas de momentos isolados, o psicólogo pode contar com uma visão
+              organizada dos registros e sinalizações disponíveis no serviço.
+            </p>
+
+            <ul class="care__points">
+              <li>
+                <strong>Organizar.</strong> Os registros ficam organizados para apoiar o
+                acompanhamento.
+              </li>
+              <li>
+                <strong>Sinalizar.</strong> Pedidos de conversa e outras sinalizações podem ganhar
+                destaque para o profissional responsável.
+              </li>
+              <li>
+                <strong>Acompanhar.</strong> O psicólogo continua sendo responsável por interpretar o
+                contexto e conduzir o cuidado.
+              </li>
+            </ul>
+          </div>
+
+          <div class="care__dashboard" data-reveal-item>
+            <div class="dash" data-dash-story>
+              <div class="dash__bar">
+                <div>
+                  <p class="dash__eyebrow dash-label-sm">Painel do profissional</p>
+                  <p class="dash__title dash-heading-2">Turma B · 9º ano</p>
+                </div>
+                <span class="dash__badge dash-label-sm">Dados ilustrativos</span>
+              </div>
+
+              <ul class="dash__list">
+                <li class="dash-row">
+                  <span class="dash-row__avatar dash-label-sm" aria-hidden="true">P</span>
+                  <span class="dash-row__name dash-body-md-bold">Pedro</span>
+                  <span class="dash-chip dash-chip--weather dash-body-sm">
+                    <img src="assets/weather/partly.svg" alt="" />
+                    Sol entre nuvens
+                  </span>
+                </li>
+
+                <li class="dash-row dash-row--focus" data-dash-focus-row>
+                  <span class="dash-row__avatar dash-label-sm" aria-hidden="true">M</span>
+                  <span class="dash-row__name dash-body-md-bold">Maria</span>
+                  <span class="dash-chip dash-chip--weather dash-body-sm">
+                    <img src="assets/weather/rain-cloud.svg" alt="" />
+                    Chuva
+                  </span>
+                  <span class="dash-chip dash-chip--muted dash-body-sm dash-row__reveal" data-dash-step="1">
+                    Com comentário
+                  </span>
+                  <span class="dash-chip dash-chip--urgent dash-body-sm dash-row__reveal" data-dash-step="2">
+                    Pedido de conversa
+                  </span>
+                </li>
+
+                <li class="dash-row">
+                  <span class="dash-row__avatar dash-label-sm" aria-hidden="true">B</span>
+                  <span class="dash-row__name dash-body-md-bold">Beatriz</span>
+                  <span class="dash-chip dash-chip--weather dash-body-sm">
+                    <img src="assets/weather/cloudy.svg" alt="" />
+                    Nublado
+                  </span>
+                  <span class="dash-chip dash-chip--muted dash-body-sm">Incongruência</span>
+                </li>
+
+                <li class="dash-row">
+                  <span class="dash-row__avatar dash-label-sm" aria-hidden="true">L</span>
+                  <span class="dash-row__name dash-body-md-bold">Lucas</span>
+                  <span class="dash-chip dash-chip--weather dash-body-sm">
+                    <img src="assets/weather/clear.svg" alt="" />
+                    Céu limpo
+                  </span>
+                </li>
+
+                <li class="dash-row">
+                  <span class="dash-row__avatar dash-label-sm" aria-hidden="true">S</span>
+                  <span class="dash-row__name dash-body-md-bold">Sofia</span>
+                  <span class="dash-chip dash-chip--muted dash-body-sm">Inatividade</span>
+                </li>
+              </ul>
+
+              <div class="dash__footnotes">
+                <p class="dash__caption dash-body-sm">Mais contexto para saber onde olhar primeiro.</p>
+                <p class="dash__note dash-body-sm">
+                  Quando o aluno pede para conversar, o sinal pode chegar de forma clara ao profissional
+                  responsável.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TECNOLOGIA PARA ORGANIZAR SINAIS. PESSOAS PARA DECIDIR COMO
+           CUIDAR. the trust statement, now with context behind it.
+           ================================================================ -->
+      <section class="humanity" id="cuidado-humano" aria-labelledby="humanity-title" data-reveal-group>
+        <h2 class="humanity__title" id="humanity-title" data-reveal-item>
+          Tecnologia para organizar sinais.<br />
+          Pessoas para decidir como cuidar.
+        </h2>
+
+        <div class="humanity__lines">
+          <p data-reveal-item>O Axon não substitui o psicólogo.</p>
+          <p data-reveal-item>Não substitui a escuta.</p>
+          <p data-reveal-item>Não substitui a conversa.</p>
+        </div>
+
+        <p class="humanity__final" data-reveal-item>Ajuda essa conversa a acontecer mais cedo.</p>
+      </section>
+
+      <!-- ================================================================
+           CUIDAR TAMBÉM É CONECTAR transition into the care ecosystem.
+           ================================================================ -->
+      <section class="connect-intro" aria-labelledby="connect-intro-title" data-reveal-group>
+        <h2 class="connect-intro__title" id="connect-intro-title" data-reveal-item>
+          Cuidar também é conectar.
+        </h2>
+        <p class="connect-intro__text" data-reveal-item>
+          O desenvolvimento emocional de um aluno não acontece em um único lugar. Escola, família e
+          aluno fazem parte da mesma história.
+        </p>
+      </section>
+
+      <!-- ================================================================
+           ECOSSISTEMA aluno, escola e família, conectados. Not a
+           triangle of feature cards: one relationship, revealed once as
+           the visitor scrolls in, lines growing rather than flying in.
+           ================================================================ -->
+      <section class="ecosystem-section" id="ecossistema" aria-labelledby="ecosystem-title">
+        <h2 class="visually-hidden" id="ecosystem-title">Aluno, escola e família</h2>
+
+        <div class="ecosystem" data-eco-story>
+          <div class="ecosystem__node ecosystem__node--family" data-eco-step="3">
+            <p class="ecosystem__label">Família</p>
+            <p class="ecosystem__text">Uma rede de cuidado mais conectada ao desenvolvimento do aluno.</p>
+          </div>
+
+          <span class="ecosystem__line ecosystem__line--vertical" data-eco-step="3" aria-hidden="true"></span>
+
+          <div class="ecosystem__row">
+            <div class="ecosystem__node ecosystem__node--aluno" data-eco-step="1">
+              <p class="ecosystem__label">Aluno</p>
+              <p class="ecosystem__text">
+                Um espaço simples para registrar como está e pedir conversa quando precisar.
+              </p>
+            </div>
+
+            <div class="ecosystem__hub" data-eco-step="2" aria-hidden="true">
+              <span class="ecosystem__hub-line"></span>
+              <span class="ecosystem__hub-mark">
+                <img class="theme-logo theme-logo--light" src="assets/nexus/Logo_Colorida.svg" alt="" width="18" height="16" />
+                <img class="theme-logo theme-logo--dark" src="assets/nexus/Logo_Branca.svg" alt="" width="18" height="16" />
+              </span>
+              <span class="ecosystem__hub-line"></span>
+            </div>
+
+            <div class="ecosystem__node ecosystem__node--escola" data-eco-step="2">
+              <p class="ecosystem__label">Escola</p>
+              <p class="ecosystem__text">
+                Mais contexto para o acompanhamento profissional dentro da rotina escolar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p class="ecosystem__statement" data-eco-step="4">
+          Por trás de cada registro existe um aluno.<br />
+          E por trás de cada aluno, existe uma história que importa.
+        </p>
+      </section>
+
+      <!-- ================================================================
+           NEXUS widening the frame. Axon is one service inside a
+           broader proposal, not the whole company.
+           ================================================================ -->
+      <section class="nexus-reveal" id="nexus" aria-labelledby="nexus-title" data-reveal-group>
+        <div class="nexus-reveal__lockup" data-nexus-story>
+          <span class="nexus-reveal__line" data-nx-step="0">Axon app</span>
+          <span class="nexus-reveal__line nexus-reveal__line--muted" data-nx-step="1">um serviço</span>
+          <img
+            class="nexus-reveal__mark theme-logo theme-logo--light"
+            data-nx-step="2"
+            src="assets/nexus/Logo_Colorida.svg"
+            alt="Nexus"
+            width="34"
+            height="30"
+          />
+          <img
+            class="nexus-reveal__mark theme-logo theme-logo--dark"
+            data-nx-step="2"
+            src="assets/nexus/Logo_Branca.svg"
+            alt="Nexus"
+            width="34"
+            height="30"
+          />
+        </div>
+
+        <h2 class="nexus-reveal__title" id="nexus-title" data-reveal-item>
+          O Axon faz parte de uma proposta maior.
+        </h2>
+        <p class="nexus-reveal__text" data-reveal-item>
+          A Nexus atua no desenvolvimento humano dentro da comunidade escolar, conectando diferentes
+          formas de cuidado e acompanhamento para apoiar o aluno, a família e a escola.
+        </p>
+        <p class="nexus-reveal__services" data-reveal-item>
+          O Axon convive com outras frentes de cuidado da Nexus
+          <span>Plantão Psicológico</span>, <span>Orientação Parental</span>,
+          <span>Avaliação Fonoaudiológica</span> e <span>Desenvolvimento Institucional</span>.
+        </p>
+      </section>
+
+      <!-- ================================================================
+           FAQ only what the project actually supports today.
+           ================================================================ -->
+      <section class="faq" id="perguntas" aria-labelledby="faq-title" data-reveal-group>
+        <div class="faq__intro" data-reveal-item>
+          <h2 class="faq__title" id="faq-title">Algumas perguntas importantes.</h2>
+          <p class="faq__lead">Tecnologia e cuidado emocional precisam caminhar junto com clareza.</p>
+        </div>
+
+        <div class="faq__list" data-reveal-item>
+          <div class="faq__item">
+            <h3 class="faq__heading">
+              <button
+                type="button"
+                class="faq__question"
+                aria-expanded="false"
+                aria-controls="faq-panel-1"
+                id="faq-q-1"
+              >
+                <span>O Axon faz algum diagnóstico?</span>
+                <span class="faq__icon" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="faq__panel" id="faq-panel-1" role="region" aria-labelledby="faq-q-1" hidden>
+              <p>
+                Não. O Axon não substitui avaliação ou acompanhamento profissional. Os registros ajudam
+                a acrescentar contexto ao trabalho realizado pelas pessoas responsáveis pelo cuidado.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <h3 class="faq__heading">
+              <button
+                type="button"
+                class="faq__question"
+                aria-expanded="false"
+                aria-controls="faq-panel-2"
+                id="faq-q-2"
+              >
+                <span>O aluno precisa escrever sobre o que aconteceu?</span>
+                <span class="faq__icon" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="faq__panel" id="faq-panel-2" role="region" aria-labelledby="faq-q-2" hidden>
+              <p>
+                Não. O comentário é opcional. O aluno pode simplesmente registrar seu clima do dia e
+                concluir o check-in.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <h3 class="faq__heading">
+              <button
+                type="button"
+                class="faq__question"
+                aria-expanded="false"
+                aria-controls="faq-panel-3"
+                id="faq-q-3"
+              >
+                <span>E se o aluno quiser conversar com alguém?</span>
+                <span class="faq__icon" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="faq__panel" id="faq-panel-3" role="region" aria-labelledby="faq-q-3" hidden>
+              <p>
+                O Axon oferece a opção "Preciso conversar agora", criando um caminho direto para
+                sinalizar ao profissional responsável que o aluno deseja conversar.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <h3 class="faq__heading">
+              <button
+                type="button"
+                class="faq__question"
+                aria-expanded="false"
+                aria-controls="faq-panel-4"
+                id="faq-q-4"
+              >
+                <span>Quem decide como agir diante de um registro?</span>
+                <span class="faq__icon" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="faq__panel" id="faq-panel-4" role="region" aria-labelledby="faq-q-4" hidden>
+              <p>
+                O cuidado continua sendo humano. O Axon ajuda a organizar informações e sinalizações,
+                mas a interpretação do contexto e as decisões de acompanhamento pertencem aos
+                profissionais responsáveis.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <h3 class="faq__heading">
+              <button
+                type="button"
+                class="faq__question"
+                aria-expanded="false"
+                aria-controls="faq-panel-5"
+                id="faq-q-5"
+              >
+                <span>Como funciona a privacidade dos registros?</span>
+                <span class="faq__icon" aria-hidden="true"></span>
+              </button>
+            </h3>
+            <div class="faq__panel" id="faq-panel-5" role="region" aria-labelledby="faq-q-5" hidden>
+              <p>
+                Privacidade e proteção das informações fazem parte da estrutura necessária para o
+                serviço. As regras de acesso, consentimento e tratamento dos dados devem seguir os
+                protocolos definidos para a implantação do Axon em cada contexto escolar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           CTA a calm invitation, not a sales button.
+           ================================================================ -->
+      <section class="cta" id="fale-com-a-nexus" aria-labelledby="cta-title" data-reveal-group>
+        <div class="cta__inner">
+          <h2 class="cta__title" id="cta-title" data-reveal-item>Cuidar hoje é proteger o futuro.</h2>
+          <p class="cta__text" data-reveal-item>
+            Conheça melhor o Axon e a proposta da Nexus para o cuidado dentro do ambiente escolar.
+          </p>
+          <div class="cta__actions" data-reveal-item>
+            <a class="cta__primary" href="#rodape">Fale com a Nexus</a>
+            <a class="cta__secondary" href="#inicio">Voltar ao início</a>
+          </div>
+          <img
+            class="cta__mark"
+            data-reveal-item
+            src="assets/nexus/Nome_Logo_Branca.svg"
+            alt="Nexus Desenvolvimento"
+          />
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="rodape">
+      <div class="site-footer__inner">
+        <a class="site-footer__brand" href="#inicio">
+          <img class="theme-logo theme-logo--light" src="assets/nexus/Logo_Colorida.svg" alt="" width="26" height="23" />
+          <img class="theme-logo theme-logo--dark" src="assets/nexus/Logo_Branca.svg" alt="" width="26" height="23" />
+          <span>Axon app · um serviço Nexus</span>
+        </a>
+
+        <nav class="site-footer__links" aria-label="Navegação do rodapé">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#do-registro-ao-cuidado">Cuidado profissional</a>
+          <a href="#ecossistema">Ecossistema</a>
+        </nav>
+
+        <p class="site-footer__meta">© <span id="footer-year"></span> Nexus</p>
+      </div>
+    </footer>
+  </body>
+</html>
