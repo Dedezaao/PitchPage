@@ -1,0 +1,7 @@
+:root {
+  --weather-sun: #e9c56d;
+  --weather-cloud-light: #a7ccd2;
+  --weather-cloud-overcast: #8fa5a8;
+  --weather-cloud-rain: #5a7a7d;
+  --weather-cloud-storm: #3d5467;
+}

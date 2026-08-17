@@ -1,0 +1,43 @@
+:root {
+  /* Nexus primitives — reconstructed from the canonical values documented in README.md. */
+  --neutral-0: #ffffff;
+  --neutral-25: #fcfcfa;
+  --neutral-50: #f6f7f5;
+  --neutral-100: #eef0ee;
+  --neutral-300: #d1d5d4;
+  --neutral-500: #8b8f8e;
+  --neutral-600: #646767;
+  --neutral-900: #1e2120;
+
+  --brand-50: #eef8f8;
+  --brand-100: #d8eeee;
+  --brand-500: #007b88;
+  --brand-600: #006e7a;
+  --brand-700: #01616c;
+  --brand-900: #004950;
+  --brand-1000: #00383e;
+
+  --red-50: #fff3f2;
+  --red-100: #ffe4e1;
+  --red-500: #c8423b;
+  --red-700: #94302b;
+
+  --spacing-4: 0.25rem;
+  --spacing-8: 0.5rem;
+  --spacing-12: 0.75rem;
+  --spacing-16: 1rem;
+  --spacing-20: 1.25rem;
+  --spacing-24: 1.5rem;
+  --spacing-32: 2rem;
+  --spacing-40: 2.5rem;
+  --spacing-48: 3rem;
+  --spacing-64: 4rem;
+  --spacing-80: 5rem;
+  --spacing-96: 6rem;
+
+  --radius-none: 0;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.5rem;
+  --radius-pill: 999px;
+}

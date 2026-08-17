@@ -1,0 +1,9 @@
+<!-- Camada de storm.svg: só o raio. Mesmo viewBox do original de
+     propósito — as duas camadas se sobrepõem com o mesmo inset. -->
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="23.1125" height="26" viewBox="0 0 23.1125 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Vector 1">
+<path d="M14.543 21C14.7447 21 14.8634 21.2266 14.7485 21.3924L12.0117 25.3425C11.8722 25.544 11.5562 25.4452 11.5562 25.2002V21H14.543Z" fill="#E9C56D"/>
+<path d="M11.5562 16.7998C11.5562 16.5548 11.2403 16.456 11.1007 16.6575L8.36398 20.6076C8.24911 20.7734 8.36777 21 8.56948 21H11.5562V16.7998Z" fill="#E9C56D"/>
+<path d="M11.5562 21H8.56948C8.36777 21 8.24911 20.7734 8.36398 20.6076L11.1007 16.6575C11.2403 16.456 11.5562 16.5548 11.5562 16.7998V21ZM11.5562 21H14.543C14.7447 21 14.8634 21.2266 14.7485 21.3924L12.0117 25.3425C11.8722 25.544 11.5562 25.4452 11.5562 25.2002V21Z" stroke="#E9C46A"/>
+</g>
+</svg>
